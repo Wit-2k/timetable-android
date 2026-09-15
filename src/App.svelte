@@ -144,6 +144,54 @@
 
   const selectedInfo = $derived(getTargetDateInfo(selectedDayOfWeek - todayDayOfWeek, semesterStartDate));
 
+  let dragOffsetX = $state(0);
+  let isDragging = $state(false);
+  let swipeStartX = $state(0);
+  let swipeStartY = $state(0);
+  let isScrubbing = $state(false);
+
+  function handleSwipeStart(e) {
+    const t = e.touches ? e.touches[0] : e;
+    swipeStartX = t.clientX;
+    swipeStartY = t.clientY;
+    isDragging = false;
+    dragOffsetX = 0;
+  }
+
+  function handleSwipeMove(e) {
+    if (swipeStartX === 0 && dragOffsetX === 0) return;
+    const t = e.touches ? e.touches[0] : e;
+    const dx = t.clientX - swipeStartX;
+    const dy = t.clientY - swipeStartY;
+    if (!isDragging && Math.abs(dx) < 10) return;
+    if (!isDragging && Math.abs(dx) < Math.abs(dy)) return;
+    isDragging = true;
+    dragOffsetX = dx;
+  }
+
+  function handleSwipeEnd() {
+    if (!isDragging) {
+      dragOffsetX = 0;
+      swipeStartX = 0;
+      return;
+    }
+    if (dragOffsetX < -50 && selectedDayOfWeek < 7) selectedDayOfWeek += 1;
+    else if (dragOffsetX > 50 && selectedDayOfWeek > 1) selectedDayOfWeek -= 1;
+    dragOffsetX = 0;
+    isDragging = false;
+    swipeStartX = 0;
+  }
+
+  function handleBarScrub(e) {
+    if (!isScrubbing) return;
+    const bar = e.currentTarget;
+    const rect = bar.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const idx = Math.floor((x / rect.width) * 7) + 1;
+    const clamped = Math.max(1, Math.min(7, idx));
+    if (clamped !== selectedDayOfWeek) selectedDayOfWeek = clamped;
+  }
+
   // 打开编辑课程
   function openEditCourse(course) {
     editingCourseId = course.id;
@@ -306,7 +354,17 @@
       </div>      
     </header>
 
-    <main class="course-list">
+    <main class="course-list" class:dragging={isDragging}
+      ontouchstart={handleSwipeStart}
+      ontouchmove={handleSwipeMove}
+      ontouchend={handleSwipeEnd}
+      ontouchcancel={handleSwipeEnd}
+      onmousedown={handleSwipeStart}
+      onmousemove={handleSwipeMove}
+      onmouseup={handleSwipeEnd}
+      onmouseleave={handleSwipeEnd}
+      style="transform: translateX({dragOffsetX}px);"
+    >
       {#if displayCourses.length === 0}
         <div class="empty-state">
           <p>今天没有课，好好休息吧！</p>
@@ -359,7 +417,17 @@
     </button>
   </div>
 
-  <footer class="bottom-week-bar">
+  <footer class="bottom-week-bar"
+      ontouchstart={(e) => { isScrubbing = true; handleBarScrub(e); }}
+      ontouchmove={handleBarScrub}
+      ontouchend={() => isScrubbing = false}
+      ontouchcancel={() => isScrubbing = false}
+      onpointerdown={(e) => { isScrubbing = true; handleBarScrub(e); }}
+      onpointermove={handleBarScrub}
+      onpointerup={() => isScrubbing = false}
+      onpointercancel={() => isScrubbing = false}
+      onpointerleave={() => isScrubbing = false}
+    >
       {#each WEEK_DAYS as day, idx}
         {@const dayNum = idx + 1}
         <button 
@@ -563,7 +631,7 @@
   .fab-group {
     position: fixed;
     right: 30px;
-    bottom: calc(env(safe-area-inset-bottom, 20px) + 100px);
+    bottom: calc(env(safe-area-inset-bottom, 20px) + 80px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -677,6 +745,13 @@
     flex-direction: column;
     gap: 14px;
     margin-top: 30px;
+    touch-action: pan-y;
+    transition: transform 0.2s ease;
+    will-change: transform;
+  }
+
+  .course-list.dragging {
+    transition: none;
   }
 
   .course-card {
@@ -787,6 +862,8 @@
     justify-content: space-between;
     gap: 4px;
     z-index: 60;
+    touch-action: none;
+    cursor: grab;
   }
 
   .week-chip {
