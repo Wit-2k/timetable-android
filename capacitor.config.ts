@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.example.app',
-  appName: 'timetable',
+  appId: 'com.oscar.schedule',
+  appName: '极简课表',
   webDir: 'dist'
 };
 
