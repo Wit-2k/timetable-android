@@ -245,7 +245,19 @@
   // Android 16 上 Share 插件只接受 file:// 地址，且部分 ROM 无应用可处理 json，
   // 因此分享失败不再视为导出失败，文件本身已保存在手机上
   let exportStatus = '';
+  let exportJsonPreview = '';
+  async function copyExportJson() {
+    try {
+      await navigator.clipboard.writeText(exportJsonPreview);
+      exportStatus = '已复制到剪贴板，可粘贴保存为 .json 文件。';
+    } catch (e: any) {
+      exportStatus = '自动复制失败，请长按下方文本手动复制。' + (e?.message ? `（${e.message}）` : '');
+    }
+  }
   async function exportCourses() {
+    exportStatus = '导出中，请稍候…';
+    exportJsonPreview = '';
+    try {
     const backupData = {
       version: 1,
       exportTime: new Date().toISOString(),
@@ -302,7 +314,8 @@
 
     if (!savedUri) {
       exportStatus = '保存失败';
-      alert('导出失败，写入手机存储失败：\n' + failures.join('\n'));
+      exportJsonPreview = jsonString;
+      alert('导出失败，写入手机存储失败，已在下方显示课表原文，可手动复制保存：\n' + failures.join('\n'));
       return;
     }
 
@@ -329,6 +342,11 @@
     }
 
     alert(locationText + (savedUri ? `\n\n完整路径：${savedUri}` : ''));
+    } catch (e: any) {
+      const msg = e?.message || String(e);
+      exportStatus = '导出异常：' + msg;
+      alert('导出异常：' + msg);
+    }
   }
 
   // 导入文件逻辑
@@ -449,6 +467,10 @@
       </div>
       {#if exportStatus}
         <div class="export-status">{exportStatus}</div>
+      {/if}
+      {#if exportJsonPreview}
+        <textarea class="export-preview" readonly rows="6" value={exportJsonPreview}></textarea>
+        <button class="backup-btn" on:click={copyExportJson}>复制课表原文</button>
       {/if}
     </div>
   {/if}
@@ -1066,6 +1088,18 @@
     padding: 8px 10px;
     word-break: break-all;
     text-align: left;
+  }
+  .export-preview {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 11px;
+    font-family: monospace;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    user-select: text;
+    -webkit-user-select: text;
   }
     /* 标题行与今天/明天切换胶囊 */
   .title-row {
