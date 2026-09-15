@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
   // 1. 预设每天 1~12 节的具体作息时间
@@ -18,7 +19,7 @@
   };
 
   const WEEK_DAYS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
-  const PALETTE = ["#4f46e5", "#059669", "#d97706", "#7c3aed", "#e11d48", "#0284c7"];
+  const PALETTE = ["#FF9AA2", "#FFB7B2", "#FFDAC1", "#B5EAD7", "#AFCBFF", "#CDB4DB", "#F1C0E8", "#A0E7E5"];
 
   // 2. 本地持久化状态：开学第一周周一的日期、课程总库、日程总库
   let semesterStartDate = $state(localStorage.getItem('semester_start') || "2026-03-02");
@@ -95,6 +96,7 @@
   // 5. 页面与模态框状态控制
   let currentTab = $state('home'); // 'home' | 'settings'
   let isAddModalOpen = $state(false);
+  let isInfoOpen = $state(false);
   let editingCourseId = $state(null);
   let editingEventId = $state(null);
   let modalMode = $state('course'); // 'course' | 'event'
@@ -106,6 +108,7 @@
     return {
       name: "",
       credit: 2,
+      assessment: "未知",
       startWeek: 1,
       endWeek: 16,
       location: "",
@@ -172,6 +175,105 @@
 
   const selectedInfo = $derived(getTargetDateInfo(selectedDayOfWeek - todayDayOfWeek, semesterStartDate));
   const selectedDateStr = $derived(getSelectedDateStr(selectedDayOfWeek, todayDayOfWeek));
+  const selectedDateLabel = $derived.by(() => {
+    const parts = selectedDateStr.split('-');
+    if (parts.length !== 3) return selectedDateStr;
+    return `${Number(parts[1])}月${Number(parts[2])}日`;
+  });
+
+  function viewHash(tab, modal) {
+    if (modal) return tab === 'settings' ? '#/settings/edit' : '#/add';
+    return tab === 'settings' ? '#/settings' : '#/';
+  }
+
+  function pushView(tab, modal) {
+    try {
+      history.pushState({ tab, modal }, '', viewHash(tab, modal));
+    } catch {}
+  }
+
+  function goSettings() {
+    if (currentTab === 'settings' && !isAddModalOpen) return;
+    currentTab = 'settings';
+    pushView('settings', isAddModalOpen);
+  }
+
+  function goHome() {
+    try {
+      if (history.state && (history.state.tab === 'settings' || history.state.modal)) {
+        history.back();
+        return;
+      }
+    } catch {}
+    currentTab = 'home';
+  }
+
+  function openModal() {
+    if (isAddModalOpen) return;
+    isAddModalOpen = true;
+    pushView(currentTab, true);
+  }
+
+  function closeModal() {
+    if (!isAddModalOpen) return;
+    try {
+      if (history.state && history.state.modal) {
+        history.back();
+        return;
+      }
+    } catch {}
+    isAddModalOpen = false;
+    editingCourseId = null;
+    editingEventId = null;
+  }
+
+  function openInfo() {
+    if (isInfoOpen) return;
+    isInfoOpen = true;
+    try {
+      history.pushState({ tab: currentTab, modal: isAddModalOpen, info: true }, '', viewHash(currentTab, isAddModalOpen));
+    } catch {}
+  }
+
+  function closeInfo() {
+    if (!isInfoOpen) return;
+    try {
+      if (history.state && history.state.info) {
+        history.back();
+        return;
+      }
+    } catch {}
+    isInfoOpen = false;
+  }
+
+  onMount(() => {
+    try {
+      const hash = window.location.hash;
+      if (hash.startsWith('#/settings')) currentTab = 'settings';
+      history.replaceState({ tab: currentTab, modal: false, info: false }, '', viewHash(currentTab, false));
+    } catch {}
+    const onPopState = (e) => {
+      const s = e.state;
+      if (s && typeof s === 'object') {
+        currentTab = s.tab === 'settings' ? 'settings' : 'home';
+        const modal = !!s.modal;
+        if (isAddModalOpen && !modal) {
+          editingCourseId = null;
+          editingEventId = null;
+        }
+        isAddModalOpen = modal;
+        isInfoOpen = !!s.info;
+      } else {
+        currentTab = 'home';
+        isAddModalOpen = false;
+        isInfoOpen = false;
+        editingCourseId = null;
+        editingEventId = null;
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  });
 
   const displayEvents = $derived(
     eventList
@@ -233,7 +335,7 @@
     editingEventId = null;
     modalMode = 'course';
     newCourse = JSON.parse(JSON.stringify(course));
-    isAddModalOpen = true;
+    openModal();
   }
 
   function openAddCourse() {
@@ -242,7 +344,7 @@
     modalMode = 'course';
     newCourse = getInitialForm();
     newEvent = getInitialEventForm(selectedDateStr);
-    isAddModalOpen = true;
+    openModal();
   }
 
   function openEditEvent(ev) {
@@ -250,7 +352,7 @@
     editingCourseId = null;
     modalMode = 'event';
     newEvent = JSON.parse(JSON.stringify(ev));
-    isAddModalOpen = true;
+    openModal();
   }
 
   function switchModalMode(mode) {
@@ -283,6 +385,9 @@
       if (isAddModalOpen) {
         isAddModalOpen = false;
         editingCourseId = null;
+        try {
+          if (history.state && history.state.modal) history.back();
+        } catch {}
       }
     }
   }
@@ -297,6 +402,9 @@
       if (isAddModalOpen) {
         isAddModalOpen = false;
         editingEventId = null;
+        try {
+          if (history.state && history.state.modal) history.back();
+        } catch {}
       }
     }
   }
@@ -325,6 +433,9 @@
     isAddModalOpen = false;
     newCourse = getInitialForm();
     editingCourseId = null;
+    try {
+      if (history.state && history.state.modal) history.back();
+    } catch {}
   }
 
   function handleSaveEvent() {
@@ -361,6 +472,9 @@
     isAddModalOpen = false;
     newEvent = getInitialEventForm(selectedDateStr);
     editingEventId = null;
+    try {
+      if (history.state && history.state.modal) history.back();
+    } catch {}
   }
 
   async function exportCourses() {
@@ -451,6 +565,13 @@
 </script>
 
 <div class="app-container">
+  <button class="info-btn" onclick={openInfo} aria-label="作息时间说明">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+  </button>
   <input
     type="file"
     accept=".json, application/json"
@@ -461,10 +582,10 @@
   {#if currentTab === "home"}
     <header class="header">
       <div class="header-left">
-        <span class="sub-title">第 {selectedInfo.week} 周 · {WEEK_DAYS[selectedInfo.dayOfWeek - 1]}</span>
-        <h1 class="main-title">
-          {selectedDayOfWeek === todayDayOfWeek ? '今日课程' : `${WEEK_DAYS[selectedDayOfWeek - 1]}课程`}
-        </h1>
+        <h1 class="main-title">第 {selectedInfo.week} 周 · {WEEK_DAYS[selectedInfo.dayOfWeek - 1]}</h1>
+        <span class="sub-title">
+          {selectedDateLabel}
+        </span>
       </div>      
     </header>
 
@@ -490,9 +611,6 @@
             <div class="card-content">
               <div class="card-header">
                 <h2 class="course-name">{item.name}</h2>
-                {#if item.credit}
-                  <span class="credit-badge">{item.credit} 学分</span>
-                {/if}
               </div>
 
               <div class="card-details">
@@ -502,11 +620,19 @@
                   <span class="time-range">{item.timeText}</span>
                 </div>
                 <div class="detail-item meta">
-                  <span>📍 {item.location || "未安排地点"}</span>
+                  <span>{item.location || "未安排地点"}</span>
                   <span class="dot">·</span>
-                  <span>👨‍🏫 {item.teacher || "无教师"}</span>
+                  <span>{item.teacher || "无教师"}</span>
                 </div>
               </div>
+            </div>
+            <div class="badge-group">
+              {#if item.credit}
+                <span class="credit-badge">{item.credit} 学分</span>
+              {/if}
+              {#if item.assessment && item.assessment !== '未知'}
+                <span class="assess-badge" class:exam={item.assessment === '考试'} class:quiz={item.assessment === '考查'}>{item.assessment}</span>
+              {/if}
             </div>
           </div>
         {/each}
@@ -516,7 +642,6 @@
             <div class="card-content">
               <div class="card-header">
                 <h2 class="course-name">{ev.content}</h2>
-                <span class="event-badge">日程</span>
               </div>
               <div class="card-details">
                 <div class="detail-item time">
@@ -528,10 +653,13 @@
                 </div>
                 {#if ev.note}
                   <div class="detail-item meta">
-                    <span>📝 {ev.note}</span>
+                    <span>{ev.note}</span>
                   </div>
                 {/if}
               </div>
+            </div>
+            <div class="badge-group">
+              <span class="event-badge">日程</span>
             </div>
           </div>
         {/each}
@@ -540,7 +668,7 @@
 
   <!-- 悬浮添加按钮 (Floating Action Button) -->
   <div class="fab-group">
-    <button class="fab fab-pencil" onclick={() => currentTab = 'settings'} aria-label="管理课程">
+    <button class="fab fab-pencil" onclick={goSettings} aria-label="管理课程">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
           <path d="m15 5 4 4"/>
@@ -585,7 +713,7 @@
   {:else}
     <div class="page-settings">
       <header class="header settings-header">          
-          <button class="back-btn" onclick={() => currentTab = 'home'} aria-label="返回课表">
+          <button class="back-btn" onclick={goHome} aria-label="返回课表">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M15 19l-7-7 7-7" />
             </svg>
@@ -609,7 +737,7 @@
           <div class="manage-item">
             <div class="manage-info">
               <span class="manage-name">{course.name}</span>
-              <span class="manage-sub">第 {course.startWeek}~{course.endWeek} 周 · {course.credit || 0} 学分</span>
+              <span class="manage-sub">第 {course.startWeek}~{course.endWeek} 周 · {course.credit || 0} 学分{#if course.assessment && course.assessment !== '未知'} · {course.assessment}{/if}</span>
             </div>
             <div class="manage-actions">
               <button class="edit-btn" onclick={() => openEditCourse(course)}>编辑</button>
@@ -652,11 +780,11 @@
 
 <!-- 添加课程/日程的 Bottom Sheet 弹窗 -->
 {#if isAddModalOpen}
-  <div class="modal-overlay" onclick={() => isAddModalOpen = false}>
+  <div class="modal-overlay" onclick={closeModal}>
     <div class="modal-content" onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
         <h2>{editingCourseId ? '修改课程' : editingEventId ? '修改日程' : modalMode === 'course' ? '添加新课程' : '添加新日程'}</h2>
-        <button class="close-btn" onclick={() => isAddModalOpen = false}>✕</button>
+        <button class="close-btn" onclick={closeModal}>✕</button>
       </div>
 
       {#if !editingCourseId && !editingEventId}
@@ -673,9 +801,19 @@
           <input type="text" bind:value={newCourse.name} class="input" />
         </div>
 
-        <div class="form-group flex-1">
+        <div class="form-row">
+          <div class="form-group credit-field">
             <label>学分</label>
-            <input type="number" step="0.5" min="0" placeholder="应该是 0.5 的整数倍" bind:value={newCourse.credit} class="input" />
+            <input type="number" step="0.5" min="0" placeholder="0.5 的整数倍" bind:value={newCourse.credit} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>考核方式</label>
+            <select bind:value={newCourse.assessment} class="select">
+              <option value="考试">考试</option>
+              <option value="考查">考查</option>
+              <option value="未知">未知</option>
+            </select>
+          </div>
         </div>
 
         <div class="form-row">
@@ -735,7 +873,7 @@
         {#if editingCourseId}
           <button class="btn-delete-modal" onclick={() => deleteCourse(editingCourseId)}>删除课程</button>
         {/if}
-        <button class="btn-cancel" onclick={() => isAddModalOpen = false}>取消</button>
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
         <button class="btn-primary" onclick={handleSaveCourse}>保存</button>
       </div>
       {:else}
@@ -771,10 +909,39 @@
         {#if editingEventId}
           <button class="btn-delete-modal" onclick={() => deleteEvent(editingEventId)}>删除日程</button>
         {/if}
-        <button class="btn-cancel" onclick={() => isAddModalOpen = false}>取消</button>
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
         <button class="btn-primary" onclick={handleSaveEvent}>保存</button>
       </div>
       {/if}
+    </div>
+  </div>
+{/if}
+
+{#if isInfoOpen}
+  <div class="info-overlay" onclick={closeInfo}>
+    <div class="info-card" onclick={(e) => e.stopPropagation()}>
+      <div class="info-header">
+        <h2>作息时间</h2>
+        <button class="close-btn" onclick={closeInfo}>✕</button>
+      </div>
+      <div class="period-table-wrap">
+        <table class="period-table">
+          <thead>
+            <tr>
+              <th>节次</th>
+              <th>时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each Object.entries(PERIOD_TIMETABLE) as [period, time]}
+              <tr>
+                <td>{period}</td>
+                <td>{time.start} - {time.end}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 {/if}
@@ -814,15 +981,15 @@
     text-align: left;
     margin: 0;
     padding-left: 2px; /* 微微对齐大标题的首字笔画 */
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: #64748b;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    margin-top: 8px;
   }
   .main-title {
     margin: 2px 0 0 0;
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.5px;
@@ -956,6 +1123,7 @@
   }
 
   .course-card {
+    position: relative;
     display: flex;
     background: #ffffff;
     border-radius: 16px;
@@ -975,6 +1143,7 @@
   .card-content {
     flex: 1;
     padding: 16px;
+    padding-right: 96px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -1007,6 +1176,42 @@
     border-radius: 8px;
     flex-shrink: 0;
     white-space: nowrap;
+  }
+
+  .badge-group {
+    position: absolute;
+    top: 14px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    align-items: flex-end;
+  }
+
+  .assess-badge {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .assess-badge.exam {
+    color: #dc2626;
+    background: #fee2e2;
+  }
+
+  .assess-badge.quiz {
+    color: #059669;
+    background: #d1fae5;
+  }
+
+  .credit-field {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 130px;
   }
 
   .time-range {
@@ -1215,6 +1420,110 @@
     justify-content: center;
     align-items: flex-end;
     z-index: 100;
+  }
+
+  .info-btn {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 20px) + 28px);
+    right: 22px;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    color: #0f172a;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 150;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .info-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+  .info-btn:active {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+
+  .info-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+    z-index: 200;
+  }
+
+  .info-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 340px;
+    max-height: 70vh;
+    border-radius: 20px;
+    padding: 20px 20px 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .info-header h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .period-table-wrap {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .period-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-top: 2px solid #0f172a;
+    border-bottom: 2px solid #0f172a;
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  .period-table thead th {
+    top: 0;
+    background: #ffffff;
+    padding: 10px 8px;
+    font-weight: 700;
+    color: #0f172a;
+    text-align: center;
+    border-bottom: 1px solid #0f172a;
+    z-index: 1;
+  }
+
+  .period-table tbody td {
+    padding: 9px 8px;
+    text-align: center;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .period-table tbody tr:last-child td {
+    border-bottom: none;
   }
 
   .modal-content {
