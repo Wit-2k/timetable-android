@@ -717,12 +717,10 @@
         <button 
           class="week-chip" 
           class:active={selectedDayOfWeek === dayNum}
+          class:today={dayNum === todayDayOfWeek}
           onclick={() => selectDay(dayNum)}
         >
-          <span class="chip-label">{day}</span>
-          {#if dayNum === todayDayOfWeek}
-            <span class="today-dot"></span>
-          {/if}
+          <span class="chip-label">{dayNum === todayDayOfWeek ? '今天' : day}</span>
         </button>
       {/each}
     </footer>
@@ -1324,12 +1322,14 @@
     color: #64748b;
   }
 
-  .today-dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #4f46e5;
-    margin-top: 3px;
+  .week-chip.today .chip-label {
+    color: #0f172a;
+    font-weight: 700;
+  }
+  .week-chip.today:not(.active) .chip-label {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1.5px;
   }
 
   .week-chip.active {
@@ -1338,9 +1338,13 @@
   .week-chip.active .chip-label {
     color: #ffffff;
     font-weight: 700;
+    text-decoration: none;
   }
-  .week-chip.active .today-dot {
-    background: #ffffff;
+  .week-chip.active.today {
+    background: #eef2ff;
+  }
+  .week-chip.active.today .chip-label {
+    color: #4338ca;
   }
 
   .page-settings {
