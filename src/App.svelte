@@ -630,7 +630,7 @@
         </div>
       {:else}
         {#each displayCourses as item (item.id + item.slot.startPeriod + selectedDayOfWeek)}
-          <div class="course-card" onclick={() => openEditCourse(item)} style="background-color: #fff; border-color: color-mix(in srgb, {item.color} 25%, #ffffff);">
+          <div class="course-card" onclick={() => openEditCourse(item)} style="background-color: #fff; border-color: color-mix(in srgb, {item.color} 22%, #ffffff);">
             <div class="card-content">
               <div class="card-header">
                 <h2 class="course-name">{item.name}</h2>
@@ -660,7 +660,7 @@
           </div>
         {/each}
         {#each displayEvents as ev (ev.id)}
-          <div class="course-card event-card" onclick={() => openEditEvent(ev)} style="background-color: #fff); border-color: color-mix(in oklch, {ev.color} 25%, #ffffff);">
+          <div class="course-card event-card" onclick={() => openEditEvent(ev)} style="background-color: #fff); border-color: color-mix(in oklch, {ev.color} 22%, #ffffff);">
             <div class="card-content">
               <div class="card-header">
                 <h2 class="course-name">{ev.content}</h2>
