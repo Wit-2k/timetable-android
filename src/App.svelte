@@ -19,7 +19,7 @@
   };
 
   const WEEK_DAYS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
-  const PALETTE = ["#FF9AA2", "#FFB7B2", "#FFDAC1", "#B5EAD7", "#AFCBFF", "#CDB4DB", "#F1C0E8", "#A0E7E5"];
+  const PALETTE = ["#9AA5B1", "#7D8CA3", "#8CA6A3", "#A3B18A", "#A89BB8", "#B5838D", "#C9ADA7", "#B8C4C9"];
 
   // 2. 本地持久化状态：开学第一周周一的日期、课程总库、日程总库
   let semesterStartDate = $state(localStorage.getItem('semester_start') || "2026-03-02");
@@ -286,6 +286,15 @@
   let swipeStartX = $state(0);
   let swipeStartY = $state(0);
   let isScrubbing = $state(false);
+  let slideDir = $state(0);
+
+  function selectDay(n, animate = true) {
+    n = Math.max(1, Math.min(7, n));
+    if (n === selectedDayOfWeek) return false;
+    slideDir = animate ? (n > selectedDayOfWeek ? 1 : -1) : 0;
+    selectedDayOfWeek = n;
+    return true;
+  }
 
   function handleSwipeStart(e) {
     const t = e.touches ? e.touches[0] : e;
@@ -312,11 +321,13 @@
       swipeStartX = 0;
       return;
     }
-    if (dragOffsetX < -50 && selectedDayOfWeek < 7) selectedDayOfWeek += 1;
-    else if (dragOffsetX > 50 && selectedDayOfWeek > 1) selectedDayOfWeek -= 1;
+    let changed = false;
+    if (dragOffsetX < -50) changed = selectDay(selectedDayOfWeek + 1);
+    else if (dragOffsetX > 50) changed = selectDay(selectedDayOfWeek - 1);
     dragOffsetX = 0;
-    isDragging = false;
     swipeStartX = 0;
+    if (changed) requestAnimationFrame(() => { isDragging = false; });
+    else isDragging = false;
   }
 
   function handleBarScrub(e) {
@@ -325,8 +336,7 @@
     const rect = bar.getBoundingClientRect();
     const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
     const idx = Math.floor((x / rect.width) * 7) + 1;
-    const clamped = Math.max(1, Math.min(7, idx));
-    if (clamped !== selectedDayOfWeek) selectedDayOfWeek = clamped;
+    selectDay(idx, false);
   }
 
   // 打开编辑课程
@@ -565,13 +575,25 @@
 </script>
 
 <div class="app-container">
-  <button class="info-btn" onclick={openInfo} aria-label="作息时间说明">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"></circle>
-      <line x1="12" y1="16" x2="12" y2="12"></line>
-      <line x1="12" y1="8" x2="12.01" y2="8"></line>
-    </svg>
-  </button>
+  {#if !isAddModalOpen && !editingCourseId && !editingEventId}
+  <div class="top-actions">
+    {#if currentTab === "home"}
+      <button class="top-btn" onclick={goSettings} aria-label="管理课程">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+          <path d="m15 5 4 4"/>
+        </svg>
+      </button>
+    {/if}
+    <button class="top-btn" onclick={openInfo} aria-label="作息时间说明">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+    </button>
+  </div>
+  {/if}
   <input
     type="file"
     accept=".json, application/json"
@@ -600,14 +622,15 @@
       onmouseleave={handleSwipeEnd}
       style="transform: translateX({dragOffsetX}px);"
     >
+    {#key selectedDayOfWeek}
+      <div class="day-page" class:from-right={slideDir > 0} class:from-left={slideDir < 0}>
       {#if displayCourses.length === 0 && displayEvents.length === 0}
         <div class="empty-state">
           <p>今天没有课，好好休息吧！</p>
         </div>
       {:else}
         {#each displayCourses as item (item.id + item.slot.startPeriod + selectedDayOfWeek)}
-          <div class="course-card" onclick={() => openEditCourse(item)}>
-            <div class="color-stripe" style="background-color: {item.color};"></div>
+          <div class="course-card" onclick={() => openEditCourse(item)} style="background-color: #fff; border-color: color-mix(in srgb, {item.color} 25%, #ffffff);">
             <div class="card-content">
               <div class="card-header">
                 <h2 class="course-name">{item.name}</h2>
@@ -637,8 +660,7 @@
           </div>
         {/each}
         {#each displayEvents as ev (ev.id)}
-          <div class="course-card event-card" onclick={() => openEditEvent(ev)}>
-            <div class="color-stripe" style="background-color: {ev.color};"></div>
+          <div class="course-card event-card" onclick={() => openEditEvent(ev)} style="background-color: #fff); border-color: color-mix(in oklch, {ev.color} 25%, #ffffff);">
             <div class="card-content">
               <div class="card-header">
                 <h2 class="course-name">{ev.content}</h2>
@@ -664,18 +686,13 @@
           </div>
         {/each}
       {/if}
+      </div>
+    {/key}
     </main>
 
   <!-- 悬浮添加按钮 (Floating Action Button) -->
   <div class="fab-group">
-    <button class="fab fab-pencil" onclick={goSettings} aria-label="管理课程">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-          <path d="m15 5 4 4"/>
-        </svg>
-      </button>
-
-    <button class="fab fab-add" onclick={openAddCourse}>
+    <button class="fab fab-add" onclick={openAddCourse} aria-label="添加课程或日程">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M12 5l0 14" />
@@ -700,7 +717,7 @@
         <button 
           class="week-chip" 
           class:active={selectedDayOfWeek === dayNum}
-          onclick={() => selectedDayOfWeek = dayNum}
+          onclick={() => selectDay(dayNum)}
         >
           <span class="chip-label">{day}</span>
           {#if dayNum === todayDayOfWeek}
@@ -1000,10 +1017,6 @@
     position: fixed;
     right: 30px;
     bottom: calc(env(safe-area-inset-bottom, 20px) + 80px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px; /* 两颗悬浮球之间的纵向呼吸间距 */
     z-index: 50;
   }
 
@@ -1022,19 +1035,6 @@
 
   .fab:active {
     transform: scale(0.9);
-  }
-
-  /* 亮色笔按钮：高级白底带微光阴影 + 精细铅笔图标 */
-  .fab-pencil {
-    background-color: #ffffff;
-    color: #0f172a; /* 深黑铅笔线条 */
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-  }
-
-  .fab-pencil svg {
-    width: 20px;
-    height: 20px;
   }
 
   /* 经典深黑加号按钮 */
@@ -1122,10 +1122,47 @@
     transition: none;
   }
 
+  .day-page {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .day-page.from-right {
+    animation: page-in-right 0.22s ease;
+  }
+
+  .day-page.from-left {
+    animation: page-in-left 0.22s ease;
+  }
+
+  @keyframes page-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(48px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes page-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-48px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
   .course-card {
     position: relative;
     display: flex;
     background: #ffffff;
+    border: 1px solid #f1f5f9;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
@@ -1133,11 +1170,6 @@
   }
   .course-card:active {
     transform: scale(0.98);
-  }
-
-  .color-stripe {
-    width: 6px;
-    flex-shrink: 0;
   }
 
   .card-content {
@@ -1199,8 +1231,8 @@
   }
 
   .assess-badge.exam {
-    color: #dc2626;
-    background: #fee2e2;
+    color: #c36218;
+    background: #fef3c7;
   }
 
   .assess-badge.quiz {
@@ -1422,12 +1454,19 @@
     z-index: 100;
   }
 
-  .info-btn {
+  .top-actions {
     position: fixed;
     top: calc(env(safe-area-inset-top, 20px) + 28px);
-    right: 22px;
-    width: 40px;
-    height: 40px;
+    right: 16px;
+    display: flex;
+    gap: 2px;
+    z-index: 150;
+  }
+
+  .top-btn {
+    width: 36px;
+    height: 36px;
+    margin-right: 6px;
     background: transparent;
     border: none;
     color: #0f172a;
@@ -1437,15 +1476,14 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 150;
     -webkit-tap-highlight-color: transparent;
     transition: transform 0.15s ease, opacity 0.15s ease;
   }
-  .info-btn svg {
+  .top-btn svg {
     width: 22px;
     height: 22px;
   }
-  .info-btn:active {
+  .top-btn:active {
     transform: scale(0.9);
     opacity: 0.6;
   }
