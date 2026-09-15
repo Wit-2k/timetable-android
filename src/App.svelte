@@ -20,9 +20,10 @@
   const WEEK_DAYS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
   const PALETTE = ["#4f46e5", "#059669", "#d97706", "#7c3aed", "#e11d48", "#0284c7"];
 
-  // 2. 本地持久化状态：开学第一周周一的日期、课程总库
+  // 2. 本地持久化状态：开学第一周周一的日期、课程总库、日程总库
   let semesterStartDate = $state(localStorage.getItem('semester_start') || "2026-03-02");
   let courseList = $state(JSON.parse(localStorage.getItem('courses') || '[]'));
+  let eventList = $state(JSON.parse(localStorage.getItem('events') || '[]'));
 
   if (courseList.length === 0) {
     courseList = [
@@ -44,6 +45,7 @@
 
   function saveData() {
     localStorage.setItem('courses', JSON.stringify(courseList));
+    localStorage.setItem('events', JSON.stringify(eventList));
     localStorage.setItem('semester_start', semesterStartDate);
   }
 
@@ -94,8 +96,11 @@
   let currentTab = $state('home'); // 'home' | 'settings'
   let isAddModalOpen = $state(false);
   let editingCourseId = $state(null);
+  let editingEventId = $state(null);
+  let modalMode = $state('course'); // 'course' | 'event'
 
   let newCourse = $state(getInitialForm());
+  let newEvent = $state(getInitialEventForm());
 
   function getInitialForm() {
     return {
@@ -109,6 +114,29 @@
       schedules: [
         { dayOfWeek: 1, startPeriod: 1, endPeriod: 2 }
       ]
+    };
+  }
+
+  function formatDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function getSelectedDateStr(selected, today) {
+    const t = new Date();
+    t.setDate(t.getDate() + (selected - today));
+    return formatDateStr(t);
+  }
+
+  function getInitialEventForm(dateStr) {
+    const t = new Date();
+    const todayStr = formatDateStr(t);
+    return {
+      content: "",
+      date: dateStr || todayStr,
+      startTime: "",
+      endTime: "",
+      note: "",
+      color: PALETTE[Math.floor(Math.random() * PALETTE.length)]
     };
   }
 
@@ -143,6 +171,13 @@
   }
 
   const selectedInfo = $derived(getTargetDateInfo(selectedDayOfWeek - todayDayOfWeek, semesterStartDate));
+  const selectedDateStr = $derived(getSelectedDateStr(selectedDayOfWeek, todayDayOfWeek));
+
+  const displayEvents = $derived(
+    eventList
+      .filter(e => e.date === selectedDateStr)
+      .sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""))
+  );
 
   let dragOffsetX = $state(0);
   let isDragging = $state(false);
@@ -195,15 +230,33 @@
   // 打开编辑课程
   function openEditCourse(course) {
     editingCourseId = course.id;
+    editingEventId = null;
+    modalMode = 'course';
     newCourse = JSON.parse(JSON.stringify(course));
     isAddModalOpen = true;
   }
 
   function openAddCourse() {
     editingCourseId = null;
+    editingEventId = null;
+    modalMode = 'course';
     newCourse = getInitialForm();
+    newEvent = getInitialEventForm(selectedDateStr);
     isAddModalOpen = true;
-  }  
+  }
+
+  function openEditEvent(ev) {
+    editingEventId = ev.id;
+    editingCourseId = null;
+    modalMode = 'event';
+    newEvent = JSON.parse(JSON.stringify(ev));
+    isAddModalOpen = true;
+  }
+
+  function switchModalMode(mode) {
+    if (editingCourseId || editingEventId) return;
+    modalMode = mode;
+  }
 
   function addScheduleSlot() {
     newCourse.schedules = [
@@ -234,6 +287,20 @@
     }
   }
 
+  function deleteEvent(id) {
+    const targetId = id || editingEventId;
+    if (!targetId) return;
+
+    if (confirm("确定要删除这条日程吗？此操作无法撤销。")) {
+      eventList = eventList.filter(e => e.id !== targetId);
+      saveData();
+      if (isAddModalOpen) {
+        isAddModalOpen = false;
+        editingEventId = null;
+      }
+    }
+  }
+
   function handleSaveCourse() {
     if (!newCourse.name.trim()) {
       alert("请输入课程名称");
@@ -260,12 +327,49 @@
     editingCourseId = null;
   }
 
+  function handleSaveEvent() {
+    if (!newEvent.content.trim()) {
+      alert("请输入日程内容");
+      return;
+    }
+    if (!newEvent.date) {
+      alert("请选择日期");
+      return;
+    }
+    if ((newEvent.startTime && !newEvent.endTime) || (!newEvent.startTime && newEvent.endTime)) {
+      alert("开始和结束时间要么都填，要么都不填");
+      return;
+    }
+    if (newEvent.startTime && newEvent.endTime && newEvent.startTime >= newEvent.endTime) {
+      alert("结束时间必须晚于开始时间");
+      return;
+    }
+
+    if (editingEventId) {
+      eventList = eventList.map(e => e.id === editingEventId ? { ...newEvent } : e);
+    } else {
+      eventList = [
+        ...eventList,
+        {
+          ...newEvent,
+          id: Date.now().toString()
+        }
+      ];
+    }
+
+    saveData();
+    isAddModalOpen = false;
+    newEvent = getInitialEventForm(selectedDateStr);
+    editingEventId = null;
+  }
+
   async function exportCourses() {
     const backupData = {
       version: 1,
       exportTime: new Date().toISOString(),
       semesterStartDate,
-      courseList
+      courseList,
+      eventList
     };
     const fileName = `课表备份_${new Date().toISOString().slice(0, 10)}.json`;
     const jsonString = JSON.stringify(backupData, null, 2);
@@ -315,9 +419,19 @@
             id: Date.now().toString() + Math.random().toString(36).substr(2, 4)
           }));
           courseList = [...courseList, ...importedCourses];
+          if (data.eventList && Array.isArray(data.eventList)) {
+            const importedEvents = data.eventList.map(e => ({
+              ...e,
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 4)
+            }));
+            eventList = [...eventList, ...importedEvents];
+          }
         } else {
           // 覆盖
           courseList = data.courseList;
+          if (data.eventList && Array.isArray(data.eventList)) {
+            eventList = data.eventList;
+          }
           if (data.semesterStartDate) {
             semesterStartDate = data.semesterStartDate;
           }
@@ -365,7 +479,7 @@
       onmouseleave={handleSwipeEnd}
       style="transform: translateX({dragOffsetX}px);"
     >
-      {#if displayCourses.length === 0}
+      {#if displayCourses.length === 0 && displayEvents.length === 0}
         <div class="empty-state">
           <p>今天没有课，好好休息吧！</p>
         </div>
@@ -392,6 +506,31 @@
                   <span class="dot">·</span>
                   <span>👨‍🏫 {item.teacher || "无教师"}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        {/each}
+        {#each displayEvents as ev (ev.id)}
+          <div class="course-card event-card" onclick={() => openEditEvent(ev)}>
+            <div class="color-stripe" style="background-color: {ev.color};"></div>
+            <div class="card-content">
+              <div class="card-header">
+                <h2 class="course-name">{ev.content}</h2>
+                <span class="event-badge">日程</span>
+              </div>
+              <div class="card-details">
+                <div class="detail-item time">
+                  {#if ev.startTime && ev.endTime}
+                    <span class="time-range">{ev.startTime} - {ev.endTime}</span>
+                  {:else}
+                    <span class="time-range">全天</span>
+                  {/if}
+                </div>
+                {#if ev.note}
+                  <div class="detail-item meta">
+                    <span>📝 {ev.note}</span>
+                  </div>
+                {/if}
               </div>
             </div>
           </div>
@@ -480,6 +619,22 @@
         {/each}
       </div>
 
+      <div class="manage-box">
+        <div class="manage-title">所有自定义日程 ({eventList.length})</div>
+        {#each eventList as ev (ev.id)}
+          <div class="manage-item">
+            <div class="manage-info">
+              <span class="manage-name">{ev.content}</span>
+              <span class="manage-sub">{ev.date} · {#if ev.startTime && ev.endTime}{ev.startTime}-{ev.endTime}{:else}全天{/if}</span>
+            </div>
+            <div class="manage-actions">
+              <button class="edit-btn" onclick={() => openEditEvent(ev)}>编辑</button>
+              <button class="del-btn" onclick={() => deleteEvent(ev.id)}>删除</button>
+            </div>
+          </div>
+        {/each}
+      </div>
+
       <div class="quick-backup-bar">
         <button class="quick-btn" onclick={exportCourses}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
@@ -495,15 +650,23 @@
 </div>
 
 
-<!-- 添加课程的 Bottom Sheet 弹窗 -->
+<!-- 添加课程/日程的 Bottom Sheet 弹窗 -->
 {#if isAddModalOpen}
   <div class="modal-overlay" onclick={() => isAddModalOpen = false}>
     <div class="modal-content" onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
-        <h2>{editingCourseId ? '修改课程' : '添加新课程'}</h2>
+        <h2>{editingCourseId ? '修改课程' : editingEventId ? '修改日程' : modalMode === 'course' ? '添加新课程' : '添加新日程'}</h2>
         <button class="close-btn" onclick={() => isAddModalOpen = false}>✕</button>
       </div>
 
+      {#if !editingCourseId && !editingEventId}
+        <div class="modal-tabs">
+          <button class="tab-btn" class:active={modalMode === 'course'} onclick={() => switchModalMode('course')}>课程</button>
+          <button class="tab-btn" class:active={modalMode === 'event'} onclick={() => switchModalMode('event')}>自定义日程</button>
+        </div>
+      {/if}
+
+      {#if modalMode === 'course'}
       <div class="modal-body">
         <div class="form-group">
           <label>课程名称 *</label>
@@ -575,6 +738,43 @@
         <button class="btn-cancel" onclick={() => isAddModalOpen = false}>取消</button>
         <button class="btn-primary" onclick={handleSaveCourse}>保存</button>
       </div>
+      {:else}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>内容 *</label>
+          <input type="text" bind:value={newEvent.content} placeholder="例如：去图书馆还书" class="input" />
+        </div>
+
+        <div class="form-group">
+          <label>日期 *</label>
+          <input type="date" bind:value={newEvent.date} class="input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>开始时间（可选）</label>
+            <input type="time" bind:value={newEvent.startTime} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>结束时间（可选）</label>
+            <input type="time" bind:value={newEvent.endTime} class="input" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>备注</label>
+          <textarea bind:value={newEvent.note} placeholder="补充说明（可选）" class="input textarea" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        {#if editingEventId}
+          <button class="btn-delete-modal" onclick={() => deleteEvent(editingEventId)}>删除日程</button>
+        {/if}
+        <button class="btn-cancel" onclick={() => isAddModalOpen = false}>取消</button>
+        <button class="btn-primary" onclick={handleSaveEvent}>保存</button>
+      </div>
+      {/if}
     </div>
   </div>
 {/if}
@@ -618,6 +818,7 @@
     font-weight: 600;
     color: #64748b;
     letter-spacing: 0.5px;
+    margin-bottom: 8px;
   }
   .main-title {
     margin: 2px 0 0 0;
@@ -1041,6 +1242,50 @@
     margin: 0;
     font-size: 18px;
     font-weight: 700;
+  }
+
+  .modal-tabs {
+    display: flex;
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+  }
+
+  .tab-btn.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  }
+
+  .event-badge {
+    font-size: 13px;
+    font-weight: 700;
+    color: #059669;
+    background: #ecfdf5;
+    padding: 3px 8px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .input.textarea {
+    resize: vertical;
+    min-height: 64px;
+    font-family: inherit;
   }
 
   .close-btn {
