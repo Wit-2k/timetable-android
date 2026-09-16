@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+  import { App as CapApp } from '@capacitor/app';
 
   // 1. 预设每天 1~12 节的具体作息时间
   const PERIOD_TIMETABLE = {
@@ -272,7 +273,28 @@
       }
     };
     window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
+
+    let backListenerHandle: { remove: () => Promise<void> } | null = null;
+    CapApp.addListener('backButton', () => {
+      if (isInfoOpen) {
+        closeInfo();
+      } else if (isAddModalOpen) {
+        closeModal();
+      } else if (currentTab === 'settings') {
+        goHome();
+      } else {
+        CapApp.exitApp();
+      }
+    }).then(handle => {
+      backListenerHandle = handle;
+    }).catch(() => {});
+
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      if (backListenerHandle) {
+        backListenerHandle.remove();
+      }
+    };
   });
 
   const displayEvents = $derived(
