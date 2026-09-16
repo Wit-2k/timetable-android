@@ -1,0 +1,88 @@
+/* 课程卡片与日程卡片的共享外观。
+   Svelte 样式按组件隔离，两个卡片组件共用的规则抽为全局 CSS，class 名保持不变。 */
+
+.course-card {
+  position: relative;
+  display: flex;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+}
+.course-card:active {
+  transform: scale(0.98);
+}
+
+.card-content {
+  flex: 1;
+  padding: 16px;
+  padding-right: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.course-name {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.35;
+  flex: 1;
+  text-align: left;
+  word-break: break-all;
+}
+
+.card-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.card-details .meta {
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  gap: 6px;
+}
+
+.detail-item.time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+  margin-bottom: 5px;
+}
+
+.period-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.time-range {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a; /* 让时间字体更醒目深黑 */
+}
+
+.badge-group {
+  position: absolute;
+  top: 14px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: flex-end;
+}

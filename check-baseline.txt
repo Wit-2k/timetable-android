@@ -1,0 +1,1264 @@
+
+> timetable@0.0.0 check
+> svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json
+
+Loading svelte-check in workspace: d:\WebDev\timetable
+Getting Svelte diagnostics...
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:30:7
+[33mWarn[39m: This reference only captures the initial value of `courseList`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally (svelte)
+[36m
+  if ([35mcourseList[36m.length === 0) {
+    courseList = [[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:636:5
+[33mWarn[39m: Non-interactive element `<main>` should not be assigned mouse or keyboard event listeners
+https://svelte.dev/e/a11y_no_noninteractive_element_interactions (svelte)
+[36m
+    [35m<main class="course-list" class:dragging={isDragging}
+      ontouchstart={handleSwipeStart}
+      ontouchmove={handleSwipeMove}
+      ontouchend={handleSwipeEnd}
+      ontouchcancel={handleSwipeEnd}
+      onmousedown={handleSwipeStart}
+      onmousemove={handleSwipeMove}
+      onmouseup={handleSwipeEnd}
+      onmouseleave={handleSwipeEnd}
+      style="transform: translateX({dragOffsetX}px);"
+    >
+    {#key selectedDayOfWeek}
+      <div class="day-page" class:from-right={slideDir > 0} class:from-left={slideDir < 0}>
+      {#if displayCourses.length === 0 && displayEvents.length === 0}
+        <div class="empty-state">
+          <p>今天没有课，好好休息吧！</p>
+        </div>
+      {:else}
+        {#each displayCourses as item (item.id + item.slot.startPeriod + selectedDayOfWeek)}
+          <div class="course-card" onclick={() => openEditCourse(item)} style="background-color: #fff; border-color: color-mix(in srgb, {item.color} 22%, #ffffff);">
+            <div class="card-content">
+              <div class="card-header">
+                <h2 class="course-name">{item.name}</h2>
+              </div>
+
+              <div class="card-details">
+                <div class="detail-item time">
+                  <span class="period-text">第 {item.slot.startPeriod}~{item.slot.endPeriod} 节</span>
+                  <span class="dot">·</span>
+                  <span class="time-range">{item.timeText}</span>
+                </div>
+                <div class="detail-item meta">
+                  <span>{item.location || "未安排地点"}</span>
+                  <span class="dot">·</span>
+                  <span>{item.teacher || "无教师"}</span>
+                </div>
+              </div>
+            </div>
+            <div class="badge-group">
+              {#if item.credit}
+                <span class="credit-badge">{item.credit} 学分</span>
+              {/if}
+              {#if item.assessment && item.assessment !== '未知'}
+                <span class="assess-badge" class:exam={item.assessment === '考试'} class:quiz={item.assessment === '考查'}>{item.assessment}</span>
+              {/if}
+            </div>
+          </div>
+        {/each}
+        {#each displayEvents as ev (ev.id)}
+          <div class="course-card event-card" onclick={() => openEditEvent(ev)} style="background-color: #fff); border-color: color-mix(in oklch, {ev.color} 22%, #ffffff);">
+            <div class="card-content">
+              <div class="card-header">
+                <h2 class="course-name">{ev.content}</h2>
+              </div>
+              <div class="card-details">
+                <div class="detail-item time">
+                  {#if ev.startTime && ev.endTime}
+                    <span class="time-range">{ev.startTime} - {ev.endTime}</span>
+                  {:else}
+                    <span class="time-range">全天</span>
+                  {/if}
+                </div>
+                {#if ev.note}
+                  <div class="detail-item meta">
+                    <span>{ev.note}</span>
+                  </div>
+                {/if}
+              </div>
+            </div>
+            <div class="badge-group">
+              <span class="event-badge">日程</span>
+            </div>
+          </div>
+        {/each}
+      {/if}
+      </div>
+    {/key}
+    </main>[36m[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:655:11
+[33mWarn[39m: Visible, non-interactive element `<div>` with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m        {#each displayCourses as item (item.id + item.slot.startPeriod + selectedDayOfWeek)}
+          [35m<div class="course-card" onclick={() => openEditCourse(item)} style="background-color: #fff; border-color: color-mix(in srgb, {item.color} 22%, #ffffff);">
+            <div class="card-content">
+              <div class="card-header">
+                <h2 class="course-name">{item.name}</h2>
+              </div>
+
+              <div class="card-details">
+                <div class="detail-item time">
+                  <span class="period-text">第 {item.slot.startPeriod}~{item.slot.endPeriod} 节</span>
+                  <span class="dot">·</span>
+                  <span class="time-range">{item.timeText}</span>
+                </div>
+                <div class="detail-item meta">
+                  <span>{item.location || "未安排地点"}</span>
+                  <span class="dot">·</span>
+                  <span>{item.teacher || "无教师"}</span>
+                </div>
+              </div>
+            </div>
+            <div class="badge-group">
+              {#if item.credit}
+                <span class="credit-badge">{item.credit} 学分</span>
+              {/if}
+              {#if item.assessment && item.assessment !== '未知'}
+                <span class="assess-badge" class:exam={item.assessment === '考试'} class:quiz={item.assessment === '考查'}>{item.assessment}</span>
+              {/if}
+            </div>
+          </div>[36m
+        {/each}[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:655:11
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m        {#each displayCourses as item (item.id + item.slot.startPeriod + selectedDayOfWeek)}
+          [35m<div class="course-card" onclick={() => openEditCourse(item)} style="background-color: #fff; border-color: color-mix(in srgb, {item.color} 22%, #ffffff);">
+            <div class="card-content">
+              <div class="card-header">
+                <h2 class="course-name">{item.name}</h2>
+              </div>
+
+              <div class="card-details">
+                <div class="detail-item time">
+                  <span class="period-text">第 {item.slot.startPeriod}~{item.slot.endPeriod} 节</span>
+                  <span class="dot">·</span>
+                  <span class="time-range">{item.timeText}</span>
+                </div>
+                <div class="detail-item meta">
+                  <span>{item.location || "未安排地点"}</span>
+                  <span class="dot">·</span>
+                  <span>{item.teacher || "无教师"}</span>
+                </div>
+              </div>
+            </div>
+            <div class="badge-group">
+              {#if item.credit}
+                <span class="credit-badge">{item.credit} 学分</span>
+              {/if}
+              {#if item.assessment && item.assessment !== '未知'}
+                <span class="assess-badge" class:exam={item.assessment === '考试'} class:quiz={item.assessment === '考查'}>{item.assessment}</span>
+              {/if}
+            </div>
+          </div>[36m
+        {/each}[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:685:11
+[33mWarn[39m: Visible, non-interactive element `<div>` with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m        {#each displayEvents as ev (ev.id)}
+          [35m<div class="course-card event-card" onclick={() => openEditEvent(ev)} style="background-color: #fff); border-color: color-mix(in oklch, {ev.color} 22%, #ffffff);">
+            <div class="card-content">
+              <div class="card-header">
+                <h2 class="course-name">{ev.content}</h2>
+              </div>
+              <div class="card-details">
+                <div class="detail-item time">
+                  {#if ev.startTime && ev.endTime}
+                    <span class="time-range">{ev.startTime} - {ev.endTime}</span>
+                  {:else}
+                    <span class="time-range">全天</span>
+                  {/if}
+                </div>
+                {#if ev.note}
+                  <div class="detail-item meta">
+                    <span>{ev.note}</span>
+                  </div>
+                {/if}
+              </div>
+            </div>
+            <div class="badge-group">
+              <span class="event-badge">日程</span>
+            </div>
+          </div>[36m
+        {/each}[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:685:11
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m        {#each displayEvents as ev (ev.id)}
+          [35m<div class="course-card event-card" onclick={() => openEditEvent(ev)} style="background-color: #fff); border-color: color-mix(in oklch, {ev.color} 22%, #ffffff);">
+            <div class="card-content">
+              <div class="card-header">
+                <h2 class="course-name">{ev.content}</h2>
+              </div>
+              <div class="card-details">
+                <div class="detail-item time">
+                  {#if ev.startTime && ev.endTime}
+                    <span class="time-range">{ev.startTime} - {ev.endTime}</span>
+                  {:else}
+                    <span class="time-range">全天</span>
+                  {/if}
+                </div>
+                {#if ev.note}
+                  <div class="detail-item meta">
+                    <span>{ev.note}</span>
+                  </div>
+                {/if}
+              </div>
+            </div>
+            <div class="badge-group">
+              <span class="event-badge">日程</span>
+            </div>
+          </div>[36m
+        {/each}[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:762:9
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m      <div class="settings-card">
+        [35m<label class="label">本学期第一周周一的日期</label>[36m
+        <input[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:820:3
+[33mWarn[39m: Visible, non-interactive element `<div>` with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m{#if isAddModalOpen}
+  [35m<div class="modal-overlay" onclick={closeModal}>
+    <div class="modal-content" onclick={(e) => e.stopPropagation()}>
+      <div class="modal-header">
+        <h2>{editingCourseId ? '修改课程' : editingEventId ? '修改日程' : modalMode === 'course' ? '添加新课程' : '添加新日程'}</h2>
+        <button class="close-btn" onclick={closeModal}>✕</button>
+      </div>
+
+      {#if !editingCourseId && !editingEventId}
+        <div class="modal-tabs">
+          <button class="tab-btn" class:active={modalMode === 'course'} onclick={() => switchModalMode('course')}>课程</button>
+          <button class="tab-btn" class:active={modalMode === 'event'} onclick={() => switchModalMode('event')}>自定义日程</button>
+        </div>
+      {/if}
+
+      {#if modalMode === 'course'}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>课程名称 *</label>
+          <input type="text" bind:value={newCourse.name} class="input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group credit-field">
+            <label>学分</label>
+            <input type="number" step="0.5" min="0" placeholder="0.5 的整数倍" bind:value={newCourse.credit} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>考核方式</label>
+            <select bind:value={newCourse.assessment} class="select">
+              <option value="考试">考试</option>
+              <option value="考查">考查</option>
+              <option value="未知">未知</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>起始周</label>
+            <input type="number" min="1" max="30" bind:value={newCourse.startWeek} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>结束周</label>
+            <input type="number" min="1" max="30" bind:value={newCourse.endWeek} class="input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>教室地点</label>
+            <input type="text" bind:value={newCourse.location} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>任课老师</label>
+            <input type="text" bind:value={newCourse.teacher} class="input" />
+          </div>
+        </div>
+
+        <!-- 动态上课时间段（支持一周多次课） -->
+        <div class="form-group">
+          <div class="schedule-title-bar">
+            <label>上课时间（支持多段）</label>
+            <button class="text-btn" onclick={addScheduleSlot}>+ 添加时间段</button>
+          </div>
+
+          {#each newCourse.schedules as slot, i}
+            <div class="schedule-box">
+              <select bind:value={slot.dayOfWeek} class="select">
+                {#each WEEK_DAYS as day, idx}
+                  <option value={idx + 1}>{day}</option>
+                {/each}
+              </select>
+
+              <div class="period-selects">
+                <span>第</span>
+                <input type="number" min="1" max="12" bind:value={slot.startPeriod} class="input num" />
+                <span>~</span>
+                <input type="number" min="1" max="12" bind:value={slot.endPeriod} class="input num" />
+                <span>节</span>
+              </div>
+
+              {#if newCourse.schedules.length > 1}
+                <button class="del-slot-btn" onclick={() => removeScheduleSlot(i)}>✕</button>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        {#if editingCourseId}
+          <button class="btn-delete-modal" onclick={() => deleteCourse(editingCourseId)}>删除课程</button>
+        {/if}
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
+        <button class="btn-primary" onclick={handleSaveCourse}>保存</button>
+      </div>
+      {:else}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>内容 *</label>
+          <input type="text" bind:value={newEvent.content} placeholder="例如：去图书馆还书" class="input" />
+        </div>
+
+        <div class="form-group">
+          <label>日期 *</label>
+          <input type="date" bind:value={newEvent.date} class="input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>开始时间（可选）</label>
+            <input type="time" bind:value={newEvent.startTime} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>结束时间（可选）</label>
+            <input type="time" bind:value={newEvent.endTime} class="input" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>备注</label>
+          <textarea bind:value={newEvent.note} placeholder="补充说明（可选）" class="input textarea" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        {#if editingEventId}
+          <button class="btn-delete-modal" onclick={() => deleteEvent(editingEventId)}>删除日程</button>
+        {/if}
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
+        <button class="btn-primary" onclick={handleSaveEvent}>保存</button>
+      </div>
+      {/if}
+    </div>
+  </div>[36m
+{/if}[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:820:3
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m{#if isAddModalOpen}
+  [35m<div class="modal-overlay" onclick={closeModal}>
+    <div class="modal-content" onclick={(e) => e.stopPropagation()}>
+      <div class="modal-header">
+        <h2>{editingCourseId ? '修改课程' : editingEventId ? '修改日程' : modalMode === 'course' ? '添加新课程' : '添加新日程'}</h2>
+        <button class="close-btn" onclick={closeModal}>✕</button>
+      </div>
+
+      {#if !editingCourseId && !editingEventId}
+        <div class="modal-tabs">
+          <button class="tab-btn" class:active={modalMode === 'course'} onclick={() => switchModalMode('course')}>课程</button>
+          <button class="tab-btn" class:active={modalMode === 'event'} onclick={() => switchModalMode('event')}>自定义日程</button>
+        </div>
+      {/if}
+
+      {#if modalMode === 'course'}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>课程名称 *</label>
+          <input type="text" bind:value={newCourse.name} class="input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group credit-field">
+            <label>学分</label>
+            <input type="number" step="0.5" min="0" placeholder="0.5 的整数倍" bind:value={newCourse.credit} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>考核方式</label>
+            <select bind:value={newCourse.assessment} class="select">
+              <option value="考试">考试</option>
+              <option value="考查">考查</option>
+              <option value="未知">未知</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>起始周</label>
+            <input type="number" min="1" max="30" bind:value={newCourse.startWeek} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>结束周</label>
+            <input type="number" min="1" max="30" bind:value={newCourse.endWeek} class="input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>教室地点</label>
+            <input type="text" bind:value={newCourse.location} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>任课老师</label>
+            <input type="text" bind:value={newCourse.teacher} class="input" />
+          </div>
+        </div>
+
+        <!-- 动态上课时间段（支持一周多次课） -->
+        <div class="form-group">
+          <div class="schedule-title-bar">
+            <label>上课时间（支持多段）</label>
+            <button class="text-btn" onclick={addScheduleSlot}>+ 添加时间段</button>
+          </div>
+
+          {#each newCourse.schedules as slot, i}
+            <div class="schedule-box">
+              <select bind:value={slot.dayOfWeek} class="select">
+                {#each WEEK_DAYS as day, idx}
+                  <option value={idx + 1}>{day}</option>
+                {/each}
+              </select>
+
+              <div class="period-selects">
+                <span>第</span>
+                <input type="number" min="1" max="12" bind:value={slot.startPeriod} class="input num" />
+                <span>~</span>
+                <input type="number" min="1" max="12" bind:value={slot.endPeriod} class="input num" />
+                <span>节</span>
+              </div>
+
+              {#if newCourse.schedules.length > 1}
+                <button class="del-slot-btn" onclick={() => removeScheduleSlot(i)}>✕</button>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        {#if editingCourseId}
+          <button class="btn-delete-modal" onclick={() => deleteCourse(editingCourseId)}>删除课程</button>
+        {/if}
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
+        <button class="btn-primary" onclick={handleSaveCourse}>保存</button>
+      </div>
+      {:else}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>内容 *</label>
+          <input type="text" bind:value={newEvent.content} placeholder="例如：去图书馆还书" class="input" />
+        </div>
+
+        <div class="form-group">
+          <label>日期 *</label>
+          <input type="date" bind:value={newEvent.date} class="input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>开始时间（可选）</label>
+            <input type="time" bind:value={newEvent.startTime} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>结束时间（可选）</label>
+            <input type="time" bind:value={newEvent.endTime} class="input" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>备注</label>
+          <textarea bind:value={newEvent.note} placeholder="补充说明（可选）" class="input textarea" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        {#if editingEventId}
+          <button class="btn-delete-modal" onclick={() => deleteEvent(editingEventId)}>删除日程</button>
+        {/if}
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
+        <button class="btn-primary" onclick={handleSaveEvent}>保存</button>
+      </div>
+      {/if}
+    </div>
+  </div>[36m
+{/if}[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:821:5
+[33mWarn[39m: Visible, non-interactive element `<div>` with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m  <div class="modal-overlay" onclick={closeModal}>
+    [35m<div class="modal-content" onclick={(e) => e.stopPropagation()}>
+      <div class="modal-header">
+        <h2>{editingCourseId ? '修改课程' : editingEventId ? '修改日程' : modalMode === 'course' ? '添加新课程' : '添加新日程'}</h2>
+        <button class="close-btn" onclick={closeModal}>✕</button>
+      </div>
+
+      {#if !editingCourseId && !editingEventId}
+        <div class="modal-tabs">
+          <button class="tab-btn" class:active={modalMode === 'course'} onclick={() => switchModalMode('course')}>课程</button>
+          <button class="tab-btn" class:active={modalMode === 'event'} onclick={() => switchModalMode('event')}>自定义日程</button>
+        </div>
+      {/if}
+
+      {#if modalMode === 'course'}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>课程名称 *</label>
+          <input type="text" bind:value={newCourse.name} class="input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group credit-field">
+            <label>学分</label>
+            <input type="number" step="0.5" min="0" placeholder="0.5 的整数倍" bind:value={newCourse.credit} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>考核方式</label>
+            <select bind:value={newCourse.assessment} class="select">
+              <option value="考试">考试</option>
+              <option value="考查">考查</option>
+              <option value="未知">未知</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>起始周</label>
+            <input type="number" min="1" max="30" bind:value={newCourse.startWeek} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>结束周</label>
+            <input type="number" min="1" max="30" bind:value={newCourse.endWeek} class="input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>教室地点</label>
+            <input type="text" bind:value={newCourse.location} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>任课老师</label>
+            <input type="text" bind:value={newCourse.teacher} class="input" />
+          </div>
+        </div>
+
+        <!-- 动态上课时间段（支持一周多次课） -->
+        <div class="form-group">
+          <div class="schedule-title-bar">
+            <label>上课时间（支持多段）</label>
+            <button class="text-btn" onclick={addScheduleSlot}>+ 添加时间段</button>
+          </div>
+
+          {#each newCourse.schedules as slot, i}
+            <div class="schedule-box">
+              <select bind:value={slot.dayOfWeek} class="select">
+                {#each WEEK_DAYS as day, idx}
+                  <option value={idx + 1}>{day}</option>
+                {/each}
+              </select>
+
+              <div class="period-selects">
+                <span>第</span>
+                <input type="number" min="1" max="12" bind:value={slot.startPeriod} class="input num" />
+                <span>~</span>
+                <input type="number" min="1" max="12" bind:value={slot.endPeriod} class="input num" />
+                <span>节</span>
+              </div>
+
+              {#if newCourse.schedules.length > 1}
+                <button class="del-slot-btn" onclick={() => removeScheduleSlot(i)}>✕</button>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        {#if editingCourseId}
+          <button class="btn-delete-modal" onclick={() => deleteCourse(editingCourseId)}>删除课程</button>
+        {/if}
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
+        <button class="btn-primary" onclick={handleSaveCourse}>保存</button>
+      </div>
+      {:else}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>内容 *</label>
+          <input type="text" bind:value={newEvent.content} placeholder="例如：去图书馆还书" class="input" />
+        </div>
+
+        <div class="form-group">
+          <label>日期 *</label>
+          <input type="date" bind:value={newEvent.date} class="input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>开始时间（可选）</label>
+            <input type="time" bind:value={newEvent.startTime} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>结束时间（可选）</label>
+            <input type="time" bind:value={newEvent.endTime} class="input" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>备注</label>
+          <textarea bind:value={newEvent.note} placeholder="补充说明（可选）" class="input textarea" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        {#if editingEventId}
+          <button class="btn-delete-modal" onclick={() => deleteEvent(editingEventId)}>删除日程</button>
+        {/if}
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
+        <button class="btn-primary" onclick={handleSaveEvent}>保存</button>
+      </div>
+      {/if}
+    </div>[36m
+  </div>[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:821:5
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m  <div class="modal-overlay" onclick={closeModal}>
+    [35m<div class="modal-content" onclick={(e) => e.stopPropagation()}>
+      <div class="modal-header">
+        <h2>{editingCourseId ? '修改课程' : editingEventId ? '修改日程' : modalMode === 'course' ? '添加新课程' : '添加新日程'}</h2>
+        <button class="close-btn" onclick={closeModal}>✕</button>
+      </div>
+
+      {#if !editingCourseId && !editingEventId}
+        <div class="modal-tabs">
+          <button class="tab-btn" class:active={modalMode === 'course'} onclick={() => switchModalMode('course')}>课程</button>
+          <button class="tab-btn" class:active={modalMode === 'event'} onclick={() => switchModalMode('event')}>自定义日程</button>
+        </div>
+      {/if}
+
+      {#if modalMode === 'course'}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>课程名称 *</label>
+          <input type="text" bind:value={newCourse.name} class="input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group credit-field">
+            <label>学分</label>
+            <input type="number" step="0.5" min="0" placeholder="0.5 的整数倍" bind:value={newCourse.credit} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>考核方式</label>
+            <select bind:value={newCourse.assessment} class="select">
+              <option value="考试">考试</option>
+              <option value="考查">考查</option>
+              <option value="未知">未知</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>起始周</label>
+            <input type="number" min="1" max="30" bind:value={newCourse.startWeek} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>结束周</label>
+            <input type="number" min="1" max="30" bind:value={newCourse.endWeek} class="input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>教室地点</label>
+            <input type="text" bind:value={newCourse.location} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>任课老师</label>
+            <input type="text" bind:value={newCourse.teacher} class="input" />
+          </div>
+        </div>
+
+        <!-- 动态上课时间段（支持一周多次课） -->
+        <div class="form-group">
+          <div class="schedule-title-bar">
+            <label>上课时间（支持多段）</label>
+            <button class="text-btn" onclick={addScheduleSlot}>+ 添加时间段</button>
+          </div>
+
+          {#each newCourse.schedules as slot, i}
+            <div class="schedule-box">
+              <select bind:value={slot.dayOfWeek} class="select">
+                {#each WEEK_DAYS as day, idx}
+                  <option value={idx + 1}>{day}</option>
+                {/each}
+              </select>
+
+              <div class="period-selects">
+                <span>第</span>
+                <input type="number" min="1" max="12" bind:value={slot.startPeriod} class="input num" />
+                <span>~</span>
+                <input type="number" min="1" max="12" bind:value={slot.endPeriod} class="input num" />
+                <span>节</span>
+              </div>
+
+              {#if newCourse.schedules.length > 1}
+                <button class="del-slot-btn" onclick={() => removeScheduleSlot(i)}>✕</button>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        {#if editingCourseId}
+          <button class="btn-delete-modal" onclick={() => deleteCourse(editingCourseId)}>删除课程</button>
+        {/if}
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
+        <button class="btn-primary" onclick={handleSaveCourse}>保存</button>
+      </div>
+      {:else}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>内容 *</label>
+          <input type="text" bind:value={newEvent.content} placeholder="例如：去图书馆还书" class="input" />
+        </div>
+
+        <div class="form-group">
+          <label>日期 *</label>
+          <input type="date" bind:value={newEvent.date} class="input" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>开始时间（可选）</label>
+            <input type="time" bind:value={newEvent.startTime} class="input" />
+          </div>
+          <div class="form-group flex-1">
+            <label>结束时间（可选）</label>
+            <input type="time" bind:value={newEvent.endTime} class="input" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>备注</label>
+          <textarea bind:value={newEvent.note} placeholder="补充说明（可选）" class="input textarea" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        {#if editingEventId}
+          <button class="btn-delete-modal" onclick={() => deleteEvent(editingEventId)}>删除日程</button>
+        {/if}
+        <button class="btn-cancel" onclick={closeModal}>取消</button>
+        <button class="btn-primary" onclick={handleSaveEvent}>保存</button>
+      </div>
+      {/if}
+    </div>[36m
+  </div>[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:837:11
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m        <div class="form-group">
+          [35m<label>课程名称 *</label>[36m
+          <input type="text" bind:value={newCourse.name} class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:843:13
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m          <div class="form-group credit-field">
+            [35m<label>学分</label>[36m
+            <input type="number" step="0.5" min="0" placeholder="0.5 的整数倍" bind:value={newCourse.credit} class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:847:13
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m          <div class="form-group flex-1">
+            [35m<label>考核方式</label>[36m
+            <select bind:value={newCourse.assessment} class="select">[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:858:13
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m          <div class="form-group flex-1">
+            [35m<label>起始周</label>[36m
+            <input type="number" min="1" max="30" bind:value={newCourse.startWeek} class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:862:13
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m          <div class="form-group flex-1">
+            [35m<label>结束周</label>[36m
+            <input type="number" min="1" max="30" bind:value={newCourse.endWeek} class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:869:13
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m          <div class="form-group flex-1">
+            [35m<label>教室地点</label>[36m
+            <input type="text" bind:value={newCourse.location} class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:873:13
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m          <div class="form-group flex-1">
+            [35m<label>任课老师</label>[36m
+            <input type="text" bind:value={newCourse.teacher} class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:881:13
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m          <div class="schedule-title-bar">
+            [35m<label>上课时间（支持多段）</label>[36m
+            <button class="text-btn" onclick={addScheduleSlot}>+ 添加时间段</button>[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:919:11
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m        <div class="form-group">
+          [35m<label>内容 *</label>[36m
+          <input type="text" bind:value={newEvent.content} placeholder="例如：去图书馆还书" class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:924:11
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m        <div class="form-group">
+          [35m<label>日期 *</label>[36m
+          <input type="date" bind:value={newEvent.date} class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:930:13
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m          <div class="form-group flex-1">
+            [35m<label>开始时间（可选）</label>[36m
+            <input type="time" bind:value={newEvent.startTime} class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:934:13
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m          <div class="form-group flex-1">
+            [35m<label>结束时间（可选）</label>[36m
+            <input type="time" bind:value={newEvent.endTime} class="input" />[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:940:11
+[33mWarn[39m: A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control (svelte)
+[36m        <div class="form-group">
+          [35m<label>备注</label>[36m
+          <textarea bind:value={newEvent.note} placeholder="补充说明（可选）" class="input textarea" rows="3"></textarea>[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:958:3
+[33mWarn[39m: Visible, non-interactive element `<div>` with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m{#if isInfoOpen}
+  [35m<div class="info-overlay" onclick={closeInfo}>
+    <div class="info-card" onclick={(e) => e.stopPropagation()}>
+      <div class="info-header">
+        <h2>作息时间</h2>
+        <button class="close-btn" onclick={closeInfo}>✕</button>
+      </div>
+      <div class="period-table-wrap">
+        <table class="period-table">
+          <thead>
+            <tr>
+              <th>节次</th>
+              <th>时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each Object.entries(PERIOD_TIMETABLE) as [period, time]}
+              <tr>
+                <td>{period}</td>
+                <td>{time.start} - {time.end}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>[36m
+{/if}[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:958:3
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m{#if isInfoOpen}
+  [35m<div class="info-overlay" onclick={closeInfo}>
+    <div class="info-card" onclick={(e) => e.stopPropagation()}>
+      <div class="info-header">
+        <h2>作息时间</h2>
+        <button class="close-btn" onclick={closeInfo}>✕</button>
+      </div>
+      <div class="period-table-wrap">
+        <table class="period-table">
+          <thead>
+            <tr>
+              <th>节次</th>
+              <th>时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each Object.entries(PERIOD_TIMETABLE) as [period, time]}
+              <tr>
+                <td>{period}</td>
+                <td>{time.start} - {time.end}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>[36m
+{/if}[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:959:5
+[33mWarn[39m: Visible, non-interactive element `<div>` with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events (svelte)
+[36m  <div class="info-overlay" onclick={closeInfo}>
+    [35m<div class="info-card" onclick={(e) => e.stopPropagation()}>
+      <div class="info-header">
+        <h2>作息时间</h2>
+        <button class="close-btn" onclick={closeInfo}>✕</button>
+      </div>
+      <div class="period-table-wrap">
+        <table class="period-table">
+          <thead>
+            <tr>
+              <th>节次</th>
+              <th>时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each Object.entries(PERIOD_TIMETABLE) as [period, time]}
+              <tr>
+                <td>{period}</td>
+                <td>{time.start} - {time.end}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>[36m
+  </div>[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:959:5
+[33mWarn[39m: `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+[36m  <div class="info-overlay" onclick={closeInfo}>
+    [35m<div class="info-card" onclick={(e) => e.stopPropagation()}>
+      <div class="info-header">
+        <h2>作息时间</h2>
+        <button class="close-btn" onclick={closeInfo}>✕</button>
+      </div>
+      <div class="period-table-wrap">
+        <table class="period-table">
+          <thead>
+            <tr>
+              <th>节次</th>
+              <th>时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each Object.entries(PERIOD_TIMETABLE) as [period, time]}
+              <tr>
+                <td>{period}</td>
+                <td>{time.start} - {time.end}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>[36m
+  </div>[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:77:25
+[31mError[39m: Parameter 'startP' implicitly has an 'any' type. (ts)
+[36m
+  function getTimeRange([35mstartP[36m, endP) {
+    const s = PERIOD_TIMETABLE[startP]?.start || "未知";[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:77:33
+[31mError[39m: Parameter 'endP' implicitly has an 'any' type. (ts)
+[36m
+  function getTimeRange(startP, [35mendP[36m) {
+    const s = PERIOD_TIMETABLE[startP]?.start || "未知";[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:78:15
+[31mError[39m: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ 1: { start: string; end: string; }; 2: { start: string; end: string; }; 3: { start: string; end: string; }; 4: { start: string; end: string; }; 5: { start: string; end: string; }; 6: { start: string; end: string; }; 7: { start: string; end: string; }; ... 4 more ...; 12: { ...; }; }'. (ts)
+[36m  function getTimeRange(startP, endP) {
+    const s = [35mPERIOD_TIMETABLE[startP][36m?.start || "未知";
+    const e = PERIOD_TIMETABLE[endP]?.end || "未知";[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:79:15
+[31mError[39m: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ 1: { start: string; end: string; }; 2: { start: string; end: string; }; 3: { start: string; end: string; }; 4: { start: string; end: string; }; 5: { start: string; end: string; }; 6: { start: string; end: string; }; 7: { start: string; end: string; }; ... 4 more ...; 12: { ...; }; }'. (ts)
+[36m    const s = PERIOD_TIMETABLE[startP]?.start || "未知";
+    const e = [35mPERIOD_TIMETABLE[endP][36m?.end || "未知";
+    return `${s} - ${e}`;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:86:14
+[31mError[39m: Parameter 'course' implicitly has an 'any' type. (ts)
+[36m    courseList
+    .flatMap([35mcourse[36m => {
+      if (currentWeek < course.startWeek || currentWeek > course.endWeek) return [];[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:88:45
+[31mError[39m: Parameter 's' implicitly has an 'any' type. (ts)
+[36m      if (currentWeek < course.startWeek || currentWeek > course.endWeek) return [];
+      const slots = course.schedules.filter([35ms[36m => s.dayOfWeek === selectedDayOfWeek);
+      return slots.map(slot => ({[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:89:24
+[31mError[39m: Parameter 'slot' implicitly has an 'any' type. (ts)
+[36m      const slots = course.schedules.filter(s => s.dayOfWeek === selectedDayOfWeek);
+      return slots.map([35mslot[36m => ({
+        ...course,[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:95:12
+[31mError[39m: Parameter 'a' implicitly has an 'any' type. (ts)
+[36m    })
+    .sort(([35ma[36m, b) => a.slot.startPeriod - b.slot.startPeriod));[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:95:15
+[31mError[39m: Parameter 'b' implicitly has an 'any' type. (ts)
+[36m    })
+    .sort((a, [35mb[36m) => a.slot.startPeriod - b.slot.startPeriod));[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:106:25
+[31mError[39m: Expected 1 arguments, but got 0. (ts)
+[36m  let newCourse = $state(getInitialForm());
+  let newEvent = $state([35mgetInitialEventForm[36m());[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:124:26
+[31mError[39m: Parameter 'd' implicitly has an 'any' type. (ts)
+[36m
+  function formatDateStr([35md[36m) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:128:31
+[31mError[39m: Parameter 'selected' implicitly has an 'any' type. (ts)
+[36m
+  function getSelectedDateStr([35mselected[36m, today) {
+    const t = new Date();[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:128:41
+[31mError[39m: Parameter 'today' implicitly has an 'any' type. (ts)
+[36m
+  function getSelectedDateStr(selected, [35mtoday[36m) {
+    const t = new Date();[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:134:32
+[31mError[39m: Parameter 'dateStr' implicitly has an 'any' type. (ts)
+[36m
+  function getInitialEventForm([35mdateStr[36m) {
+    const t = new Date();[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:185:21
+[31mError[39m: Parameter 'tab' implicitly has an 'any' type. (ts)
+[36m
+  function viewHash([35mtab[36m, modal) {
+    if (modal) return tab === 'settings' ? '#/settings/edit' : '#/add';[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:185:26
+[31mError[39m: Parameter 'modal' implicitly has an 'any' type. (ts)
+[36m
+  function viewHash(tab, [35mmodal[36m) {
+    if (modal) return tab === 'settings' ? '#/settings/edit' : '#/add';[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:190:21
+[31mError[39m: Parameter 'tab' implicitly has an 'any' type. (ts)
+[36m
+  function pushView([35mtab[36m, modal) {
+    try {[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:190:26
+[31mError[39m: Parameter 'modal' implicitly has an 'any' type. (ts)
+[36m
+  function pushView(tab, [35mmodal[36m) {
+    try {[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:256:25
+[31mError[39m: Parameter 'e' implicitly has an 'any' type. (ts)
+[36m    } catch {}
+    const onPopState = ([35me[36m) => {
+      const s = e.state;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:302:15
+[31mError[39m: Parameter 'e' implicitly has an 'any' type. (ts)
+[36m    eventList
+      .filter([35me[36m => e.date === selectedDateStr)
+      .sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""))[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:303:14
+[31mError[39m: Parameter 'a' implicitly has an 'any' type. (ts)
+[36m      .filter(e => e.date === selectedDateStr)
+      .sort(([35ma[36m, b) => (a.startTime || "").localeCompare(b.startTime || ""))
+  );[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:303:17
+[31mError[39m: Parameter 'b' implicitly has an 'any' type. (ts)
+[36m      .filter(e => e.date === selectedDateStr)
+      .sort((a, [35mb[36m) => (a.startTime || "").localeCompare(b.startTime || ""))
+  );[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:313:22
+[31mError[39m: Parameter 'n' implicitly has an 'any' type. (ts)
+[36m
+  function selectDay([35mn[36m, animate = true) {
+    n = Math.max(1, Math.min(7, n));[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:321:29
+[31mError[39m: Parameter 'e' implicitly has an 'any' type. (ts)
+[36m
+  function handleSwipeStart([35me[36m) {
+    const t = e.touches ? e.touches[0] : e;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:329:28
+[31mError[39m: Parameter 'e' implicitly has an 'any' type. (ts)
+[36m
+  function handleSwipeMove([35me[36m) {
+    if (swipeStartX === 0 && dragOffsetX === 0) return;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:355:27
+[31mError[39m: Parameter 'e' implicitly has an 'any' type. (ts)
+[36m
+  function handleBarScrub([35me[36m) {
+    if (!isScrubbing) return;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:365:27
+[31mError[39m: Parameter 'course' implicitly has an 'any' type. (ts)
+[36m  // 打开编辑课程
+  function openEditCourse([35mcourse[36m) {
+    editingCourseId = course.id;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:382:26
+[31mError[39m: Parameter 'ev' implicitly has an 'any' type. (ts)
+[36m
+  function openEditEvent([35mev[36m) {
+    editingEventId = ev.id;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:390:28
+[31mError[39m: Parameter 'mode' implicitly has an 'any' type. (ts)
+[36m
+  function switchModalMode([35mmode[36m) {
+    if (editingCourseId || editingEventId) return;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:402:31
+[31mError[39m: Parameter 'index' implicitly has an 'any' type. (ts)
+[36m
+  function removeScheduleSlot([35mindex[36m) {
+    if (newCourse.schedules.length > 1) {[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:408:25
+[31mError[39m: Parameter 'id' implicitly has an 'any' type. (ts)
+[36m
+  function deleteCourse([35mid[36m) {
+    const targetId = id || editingCourseId;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:413:38
+[31mError[39m: Parameter 'c' implicitly has an 'any' type. (ts)
+[36m    if (confirm("确定要删除这门课程吗？此操作无法撤销。")) {
+      courseList = courseList.filter([35mc[36m => c.id !== targetId);
+      saveData();[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:427:24
+[31mError[39m: Parameter 'id' implicitly has an 'any' type. (ts)
+[36m
+  function deleteEvent([35mid[36m) {
+    const targetId = id || editingEventId;[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:432:36
+[31mError[39m: Parameter 'e' implicitly has an 'any' type. (ts)
+[36m    if (confirm("确定要删除这条日程吗？此操作无法撤销。")) {
+      eventList = eventList.filter([35me[36m => e.id !== targetId);
+      saveData();[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:452:35
+[31mError[39m: Parameter 'c' implicitly has an 'any' type. (ts)
+[36m      // 修改已有课程
+      courseList = courseList.map([35mc[36m => c.id === editingCourseId ? { ...newCourse } : c);
+    } else {[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:492:33
+[31mError[39m: Parameter 'e' implicitly has an 'any' type. (ts)
+[36m    if (editingEventId) {
+      eventList = eventList.map([35me[36m => e.id === editingEventId ? { ...newEvent } : e);
+    } else {[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:533:23
+[31mError[39m: 'e' is of type 'unknown'. (ts)
+[36m    } catch (e) {
+      alert("保存失败：" + [35me[36m.message);
+    }[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:541:5
+[31mError[39m: 'fileInputRef' is of type 'unknown'. (ts)
+[36m  function triggerImport() {
+    [35mfileInputRef[36m.click(); // 触发隐藏的文件选择框
+  }[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:544:29
+[31mError[39m: Parameter 'event' implicitly has an 'any' type. (ts)
+[36m
+  function handleFileImport([35mevent[36m) {
+    const file = event.target.files[0];[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:551:33
+[31mError[39m: 'e.target' is possibly 'null'. (ts)
+[36m      try {
+        const data = JSON.parse([35me.target[36m.result);[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:551:33
+[31mError[39m: Argument of type 'string | ArrayBuffer | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'. (ts)
+[36m      try {
+        const data = JSON.parse([35me.target.result[36m);[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:563:55
+[31mError[39m: Parameter 'c' implicitly has an 'any' type. (ts)
+[36m          // 合并（给导入的课程重新生成唯一 id，防止冲突）
+          const importedCourses = data.courseList.map([35mc[36m => ({
+            ...c,[39m
+
+d:\WebDev\timetable\[32msrc\App.svelte[39m:569:55
+[31mError[39m: Parameter 'e' implicitly has an 'any' type. (ts)
+[36m          if (data.eventList && Array.isArray(data.eventList)) {
+            const importedEvents = data.eventList.map([35me[36m => ({
+              ...e,[39m
+
+====================================
+[31msvelte-check found 43 errors and 28 warnings in 1 file
+[39m
