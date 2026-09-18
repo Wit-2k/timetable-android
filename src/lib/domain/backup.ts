@@ -3,12 +3,12 @@ import { makeImportId } from '../utils/id';
 
 export type ImportMode = 'merge' | 'replace';
 
-export interface TimetableData {
+interface TimetableData {
   courses: Course[];
   events: EventItem[];
 }
 
-export interface ImportOutcome extends TimetableData {
+interface ImportOutcome extends TimetableData {
   semesterStartDate: string | null;
 }
 

@@ -59,14 +59,9 @@
         // 传递 animate=false 告诉 DaySchedule 执行它的跟手渐显
         onselect(idx, false);
 
-        // 连续滑动切天：每切一天触发一次轻微物理触感（振动）
-        try {
-          Haptics.impact({ style: ImpactStyle.Light });
-        } catch (err) {
-          if (navigator.vibrate) {
-            navigator.vibrate(10);
-          }
-        }
+        // 连续滑动切天：每切一天触发一次轻微物理触感（振动）。
+        // impact 返回 Promise，Web 端不支持时表现为 reject，触感只是锦上添花，忽略即可
+        Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
       }
     }
   }

@@ -43,7 +43,6 @@
   .fab-add {
     background-color: #0f172a;
     color: #ffffff;
-    font-size: 26px;
     box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
   }
 </style>

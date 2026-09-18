@@ -70,7 +70,6 @@
        容器自身只负责裁剪 */
     display: grid;
     grid-template-rows: minmax(0, 1fr);
-    /* height: 100vh; */
     height: 100dvh;
     box-sizing: border-box;
     padding: calc(env(safe-area-inset-top, 20px) + 16px) 20px 0;

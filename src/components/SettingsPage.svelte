@@ -10,11 +10,10 @@
 
   // —— 开学日期变更 ——
   function handleSemesterStartChange() {
+    // bind:value 已在 input 事件中更新 semesterStartDate，
+    // 依赖它的 selectedInfo / displayCourses 会自动重算，这里只需落盘并重算当前周次
     saveData();
     calculateCurrentTime();
-    // selectedInfo/displayCourses 已通过响应式依赖 semesterStartDate 自动重算，
-    // 这里再强制触发布局刷新，兼容部分 Android WebView 日期控件只触发 input 的情况
-    timetable.semesterStartDate = timetable.semesterStartDate;
   }
 
   // —— 导入导出（IO 留在本组件）——
