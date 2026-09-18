@@ -1,4 +1,11 @@
-# Logs
+# ── 依赖与构建产物 ─────────────────────────────────────────────
+node_modules
+dist
+dist-ssr
+coverage
+*.tsbuildinfo
+
+# ── 日志 ───────────────────────────────────────────────────────
 logs
 *.log
 npm-debug.log*
@@ -7,22 +14,36 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# ── 环境变量 ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
 *.local
 
-# Editor directories and files
+# ── 编辑器 / 操作系统 ──────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
+desktop.ini
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-*.png
-*.webp
-*.xml
+# ── Android 签名与安装包 ───────────────────────────────────────
+# 防止误提交；gradle/Android Studio 的产物由 android/.gitignore 单独负责
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# ──────────────────────────────────────────────────────────────
+# 注意：这里刻意不写 *.png / *.webp / *.xml 这类全局规则。
+# android/app/src/main/res/ 下的启动图（drawable*/splash.png）与桌面图标
+# （mipmap-*/ic_launcher*.webp、mipmap-anydpi-v26/*.xml）是 App 的正式资源：
+# AndroidManifest 引用 @mipmap/ic_launcher，两个自适应图标 XML 又引用
+# @mipmap/ic_launcher_foreground，少任何一个 AAPT 都会直接编译失败，
+# 而且仓库里没有 @capacitor/assets 之类的脚本可以把它们再生成回来。
