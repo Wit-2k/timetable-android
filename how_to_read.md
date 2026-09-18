@@ -139,7 +139,7 @@ AddModal.svelte                点「保存」→ saveCourse
 
 ## 不想读代码时怎么验证行为
 
-- **`bun run check`** —— 唯一的自动化校验（当前 0 errors / 27 条既有 a11y 告警）。
+- **`bun run check`** —— 唯一的自动化校验（当前 0 errors / 0 warnings）。
 - **直接改 localStorage 再刷新。** 数据在模块初始化时读取，所以在 devtools 里手写 `localStorage.setItem('courses', '[...]')` 然后刷新，就能构造跨周课程、超长备注之类的边界数据，不用改代码。
 - **在控制台里直接调纯函数。** dev 模式下可以按 Vite 的模块路径动态 import：
 

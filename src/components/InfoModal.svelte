@@ -15,8 +15,11 @@
 </script>
 
 {#if modal.isInfoOpen}
-  <div class="info-overlay" transition:fade={{ duration: 200 }} onclick={closeInfo}>
-    <div class="info-card" transition:pop onclick={(e) => e.stopPropagation()}>
+  <!-- 同 AddModal：遮罩点击是鼠标/触摸的便捷入口，键盘用户走「✕」 -->
+  <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+  <div class="info-overlay" transition:fade={{ duration: 200 }}
+    onclick={(e) => { if (e.target === e.currentTarget) closeInfo(); }}>
+    <div class="info-card" transition:pop>
       <div class="info-header">
         <h2>作息时间</h2>
         <button class="close-btn" onclick={closeInfo}>✕</button>

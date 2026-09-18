@@ -4,9 +4,22 @@
   import '../lib/styles/card.css';
 
   let { item, onedit }: { item: DisplayCourse; onedit: (course: Course) => void } = $props();
+
+  // 整张卡片就是「编辑这门课」的入口：用 role="button" 补上按钮语义，
+  // 并按按钮的约定响应 Enter / 空格
+  function activateOnKey(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onedit(item);
+    }
+  }
 </script>
 
-<div class="course-card" onclick={() => onedit(item)} style="background-color: #fff; border-color: color-mix(in srgb, {item.color} 22%, #ffffff);">
+<div class="course-card" role="button" tabindex="0"
+  onclick={() => onedit(item)}
+  onkeydown={activateOnKey}
+  style="background-color: #fff; border-color: color-mix(in srgb, {item.color} 22%, #ffffff);"
+>
   <div class="card-content">
     <div class="card-header">
       <h2 class="course-name">{item.name}</h2>

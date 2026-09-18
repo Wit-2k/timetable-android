@@ -62,6 +62,10 @@
   }
 </script>
 
+<!-- 左右滑动切天是触摸/鼠标的便捷操作：同一切日动作在底部周条上有真实按钮可达，
+     而这个容器是原生滚动区（touch-action: pan-y），补 role/tabindex 会与滚动行为打架，
+     所以相关告警在此忽略 -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <main class="course-list" class:dragging={isDragging}
   ontouchstart={handleSwipeStart}
   ontouchmove={handleSwipeMove}

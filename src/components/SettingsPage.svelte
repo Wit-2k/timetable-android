@@ -90,8 +90,9 @@
   </header>
 
   <div class="settings-card">
-    <label class="label">本学期第一周周一的日期</label>
+    <label class="label" for="semester-start-date">本学期第一周周一的日期</label>
     <input
+      id="semester-start-date"
       type="date"
       bind:value={timetable.semesterStartDate}
       onchange={handleSemesterStartChange}

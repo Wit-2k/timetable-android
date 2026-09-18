@@ -58,8 +58,12 @@
 
 <!-- 添加课程/日程的 Bottom Sheet 弹窗 -->
 {#if modal.isAddModalOpen}
-  <div class="modal-overlay" transition:fade={{ duration: 200 }} onclick={closeModal}>
-    <div class="modal-content" transition:slideUp onclick={(e) => e.stopPropagation()}>
+  <!-- 点遮罩关闭只是给鼠标/触摸的顺手操作：键盘用户有「✕」和「取消」两个真实按钮可达，
+       而遮罩本身不该有可访问语义，所以不为它补 role/tabindex，相关告警在此忽略 -->
+  <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+  <div class="modal-overlay" transition:fade={{ duration: 200 }}
+    onclick={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
+    <div class="modal-content" transition:slideUp>
       <div class="modal-header">
         <h2>{modal.editingCourseId ? '修改课程' : modal.editingEventId ? '修改日程' : modal.modalMode === 'course' ? '添加新课程' : '添加新日程'}</h2>
         <button class="close-btn" onclick={closeModal}>✕</button>

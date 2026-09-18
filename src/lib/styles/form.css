@@ -25,7 +25,8 @@
   box-sizing: border-box;
 }
 
-.form-group label {
+.form-group label,
+.form-group .group-label {
   font-size: 12px;
   font-weight: 600;
   color: #64748b;

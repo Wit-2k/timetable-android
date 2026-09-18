@@ -3,9 +3,21 @@
   import '../lib/styles/card.css';
 
   let { ev, onedit }: { ev: EventItem; onedit: (ev: EventItem) => void } = $props();
+
+  // 同 CourseCard：整张卡片是一个按钮，键盘用 Enter / 空格激活
+  function activateOnKey(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onedit(ev);
+    }
+  }
 </script>
 
-<div class="course-card event-card" onclick={() => onedit(ev)} style="background-color: #fff; border-color: color-mix(in oklch, {ev.color} 22%, #ffffff);">
+<div class="course-card event-card" role="button" tabindex="0"
+  onclick={() => onedit(ev)}
+  onkeydown={activateOnKey}
+  style="background-color: #fff; border-color: color-mix(in oklch, {ev.color} 22%, #ffffff);"
+>
   <div class="card-content">
     <div class="card-header">
       <h2 class="course-name">{ev.content}</h2>

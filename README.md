@@ -163,13 +163,26 @@ localStorage 四个 key：
 - **列表滑动切天**（`DaySchedule.svelte`）：水平位移超过 10px 且大于垂直位移才判定为滑动，松手位移超过 50px 才真正切天，否则回弹原位。
 - **周条拖拽**（`WeekBar.svelte`）：用 pointer 事件，水平移动超过 8px 判定为 scrub 后才 `setPointerCapture` —— 这样单纯的轻触不会被捕获，子元素的 `click` 和位移动画能正常触发。scrub 时按 x 坐标映射到第几天，每切一天触发一次 `Haptics.impact(Light)`。
 - **触感降级**：`Haptics.impact()` 在浏览器走 Capacitor 的 web 实现，不支持振动 API 的浏览器会 reject，代码里直接忽略 —— 触感只是锦上添花，失败不影响功能。
+- **卡片即按钮**：课程卡/日程卡是一个 `role="button"` 的容器，触摸或点击整张卡片打开编辑弹窗，键盘可以 Tab 聚焦、用 Enter / 空格激活。卡片里没有换成真的 `<button>`，是因为它包含 `<h2>` 等块级内容，而 `<button>` 只允许短语内容；换成 `<button>` 还要额外重置 `padding` 和字体继承。
+
+## 无障碍（a11y）
+
+`bun run check` 目前是 **0 errors / 0 warnings**。曾经存在的 27 条告警已全部处理：表单的 `label` 都通过 `for`/`id` 关联到控件（点标签能聚焦对应输入框），可点击的卡片和遮罩都有了正确语义。
+
+代码里保留 3 处 `svelte-ignore`，都是有意的，且都只有鼠标/触摸含义、键盘用户有等价的真实按钮可达，每处注释都写了理由：
+
+| 位置 | 原因 |
+| --- | --- |
+| `AddModal.svelte` / `InfoModal.svelte` 的遮罩 | 点遮罩关闭是鼠标/触摸的便捷入口，键盘用户走「✕」和「取消」；遮罩不该有可访问语义，补 `role`/`tabindex` 反而错 |
+| `DaySchedule.svelte` 的 `<main>` | 左右滑动切天在底部周条上有真实按钮可达；而它是原生滚动区（`touch-action: pan-y`），补 `role`/`tabindex` 会和滚动行为打架 |
+
+弹窗还**没有**实现 `role="dialog"` / `aria-modal` / 焦点陷阱 / Esc 关闭。没有焦点陷阱时加 `aria-modal="true"` 反而更危险（读屏会忽略弹窗外内容，而焦点可能跑出去），所以这几项要一起做才有意义。
 
 ## 已知限制
 
 - 作息表（12 节的起止时间）是写死的，改 `src/lib/constants.ts` 里的 `PERIOD_TIMETABLE`。
 - 数据只存本机 localStorage，没有账号与云同步；换设备靠「导出备份 → 导入还原」，清理浏览器数据会丢失。
 - 没有测试框架，回归靠 `bun run check` + 手工冒烟（切日、滑动、增删改课程与日程、改开学日期、导入导出、浏览器后退、Android 返回键）。
-- `svelte-check` 目前有 27 条 a11y 告警（`label` 未关联控件、可点击 `div` 缺少 role 等），是拆分前就存在的遗留问题，不影响运行。
 
 ## 相关文档
 
