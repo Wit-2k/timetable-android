@@ -74,7 +74,11 @@
   style="transform: translateX({dragOffsetX}px);"
 >
   {#key view.selectedDayOfWeek}
-    <div class="day-page" class:from-right={view.slideDir > 0} class:from-left={view.slideDir < 0}>
+    <div class="day-page"
+      class:from-right={view.slideDir > 0}
+      class:from-left={view.slideDir < 0}
+      class:fade-only={view.slideDir === 0}
+    >
       {#if courses.length === 0 && events.length === 0}
         <div class="empty-state">
           <p>今天没有课，好好休息吧！</p>
@@ -97,9 +101,27 @@
     flex-direction: column;
     gap: 14px;
     margin-top: 30px;
+    /* 给右下角悬浮按钮留出净空（Fab 高 60px + 8px 间距）：
+       否则滚到底时最后一张卡片的下沿会被 Fab 压住，且无法再滚开 */
+    padding-bottom: 75px;
+    /* 主页的滚动区域：只有卡片列表滚动，头部、Fab、底部周条保持不动 */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    /* 与 overflow-y 搭配后 x 轴会被算成 auto，显式关掉以免左右滑动手势触发横向滚动 */
+    overflow-x: hidden;
+    /* 保留本区域的回弹、且不向页面传导（contain）。
+       不要给 html/body 加 overscroll-behavior: none —— 真机实测那样会让
+       内部滚动区域的回弹一起消失 */
+    overscroll-behavior-y: contain;
+    scrollbar-width: none;
     touch-action: pan-y;
     transition: transform 0.2s ease;
     will-change: transform;
+  }
+
+  .course-list::-webkit-scrollbar {
+    display: none;
   }
 
   .course-list.dragging {
@@ -118,6 +140,20 @@
 
   .day-page.from-left {
     animation: page-in-left 0.22s ease;
+  }
+
+  .day-page.fade-only {
+    animation: page-fade-in 0.18s ease-out forwards;
+    will-change: opacity;
+  }
+
+  @keyframes page-fade-in {
+    from {
+      opacity: 0.3;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
   @keyframes page-in-right {

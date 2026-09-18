@@ -149,6 +149,20 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    /* 高度锁定为 App 页面容器的高度，内容超出一屏时在本区域内滚动 */
+    height: 100%;
+    box-sizing: border-box;
+    padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 80px);
+    overflow-y: auto;
+    /* 保留本区域的回弹、且不向页面传导（contain）。
+       不要给 html/body 加 overscroll-behavior: none —— 真机实测那样会让
+       内部滚动区域的回弹一起消失 */
+    overscroll-behavior-y: contain;
+    scrollbar-width: none;
+  }
+
+  .page-settings::-webkit-scrollbar {
+    display: none;
   }
 
   /* 与 HomeHeader 同源的头部样式（两页各自渲染 <header class="header">） */

@@ -8,11 +8,19 @@ import { pushView, view, viewHash } from './view.svelte';
 
 export type ModalMode = 'course' | 'event';
 
+// 添加流程中用户最后停留的标签页，与课表数据一起持久化，
+// 下次打开「添加」弹窗时沿用（编辑弹窗不受影响）
+const ADD_MODE_KEY = 'modal_mode';
+
+function loadAddMode(): ModalMode {
+  return localStorage.getItem(ADD_MODE_KEY) === 'event' ? 'event' : 'course';
+}
+
 // 5. 页面与模态框状态控制
 export const modal = $state({
   isAddModalOpen: false,
   isInfoOpen: false,
-  modalMode: 'course' as ModalMode,
+  modalMode: loadAddMode(),
   editingCourseId: null as string | null,
   editingEventId: null as string | null,
   newCourse: getInitialCourseForm() as CourseDraft,
@@ -85,7 +93,8 @@ export function openEditCourse(course: Course) {
 export function openAddCourse() {
   modal.editingCourseId = null;
   modal.editingEventId = null;
-  modal.modalMode = 'course';
+  // 这里不是硬编码 course：沿用上次停留的标签页，同时把编辑弹窗留下的模式覆盖掉
+  modal.modalMode = loadAddMode();
   modal.newCourse = getInitialCourseForm();
   modal.newEvent = getInitialEventForm(currentSelectedDateStr());
   openModal();
@@ -102,6 +111,7 @@ export function openEditEvent(ev: EventItem) {
 export function switchModalMode(mode: ModalMode) {
   if (modal.editingCourseId || modal.editingEventId) return;
   modal.modalMode = mode;
+  localStorage.setItem(ADD_MODE_KEY, mode); // 记住用户这次的选择
 }
 
 export function addScheduleSlot() {

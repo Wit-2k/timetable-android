@@ -16,8 +16,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    /* 与下方 course-list 的间距由列表自己的 margin-top 提供：
+       .home-page-root 是 flex 容器，兄弟 margin 不再折叠 */
+    margin-bottom: 0;
     margin-top: 12px;
+    margin-left: 6px;
   }
   .header-left {
     display: flex;

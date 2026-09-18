@@ -16,8 +16,8 @@
 <style>
   /* 右下角悬浮按钮容器（避开底部周条） */
   .fab-group {
-    position: fixed;
-    right: 30px;
+    position: absolute;
+    right: 10px;
     bottom: calc(env(safe-area-inset-bottom, 20px) + 80px);
     z-index: 50;
   }

@@ -13,12 +13,45 @@
   import CourseForm from './CourseForm.svelte';
   import EventForm from './EventForm.svelte';
 
+  // 面板切换动画的两个起点：旧面板高度、滑入方向。
+  // 只在过渡函数里读取，不需要响应式
+  let panelFromHeight = 0;
+  let panelX = 0;
+  let panelEl: HTMLElement | null = $state(null);
+
+  // 课程标签在左、日程标签在右：切换时新面板从目标标签所在的一侧滑入
+  function switchTab(mode: 'course' | 'event') {
+    if (mode === modal.modalMode) return;
+    panelFromHeight = panelEl?.offsetHeight ?? 0;
+    panelX = mode === 'event' ? 12 : -12;
+    switchModalMode(mode);
+  }
+
   // Bottom Sheet 贴底抽屉滑入/滑出：按弹窗自身高度的百分比位移，进出共用同一曲线
   function slideUp(node: HTMLElement, { duration = 300 }: { duration?: number } = {}) {
     return {
       duration,
       easing: cubicOut,
       css: (t: number) => `transform: translateY(${(1 - t) * 100}%);`
+    };
+  }
+
+  // 面板进场：淡入 + 从切换方向滑入，高度从旧面板高度平滑过渡到新面板高度，
+  // 这样抽屉不会在切换瞬间突然变高/变矮。
+  // 首次打开时 panelFromHeight 为 0（不做高度过渡，也不叠加横向位移）；
+  // 过渡结束后 Svelte 会清掉这些内联样式，高度回到 auto
+  function panelIn(node: HTMLElement, { duration = 240 }: { duration?: number } = {}) {
+    const to = node.offsetHeight; // 新面板的自然高度（内容超高时已是 85vh 截断后的高度）
+    const from = panelFromHeight;
+    panelFromHeight = 0; // 用完即清，避免下次打开弹窗时误用上一次切换的高度
+    const animateHeight = from > 0 && Math.abs(to - from) > 1;
+    return {
+      duration,
+      easing: cubicOut,
+      css: (t: number) => {
+        const height = animateHeight ? from + (to - from) * t : to;
+        return `height: ${height}px; overflow: hidden; opacity: ${t}; transform: translateX(${(1 - t) * panelX}px);`;
+      }
     };
   }
 </script>
@@ -34,32 +67,38 @@
 
       {#if !modal.editingCourseId && !modal.editingEventId}
         <div class="modal-tabs">
-          <button class="tab-btn" class:active={modal.modalMode === 'course'} onclick={() => switchModalMode('course')}>课程</button>
-          <button class="tab-btn" class:active={modal.modalMode === 'event'} onclick={() => switchModalMode('event')}>自定义日程</button>
+          <button class="tab-btn" class:active={modal.modalMode === 'course'} onclick={() => switchTab('course')}>课程</button>
+          <button class="tab-btn" class:active={modal.modalMode === 'event'} onclick={() => switchTab('event')}>自定义日程</button>
         </div>
       {/if}
 
-      {#if modal.modalMode === 'course'}
-        <CourseForm bind:course={modal.newCourse} />
+      <!-- 按当前标签重建面板：新面板淡入、按切换方向滑入，并把旧面板高度过渡到新高度
+           （旧面板不做出场，避免两块面板同时占位） -->
+      {#key modal.modalMode}
+        <div class="mode-panel" bind:this={panelEl} in:panelIn>
+          {#if modal.modalMode === 'course'}
+            <CourseForm bind:course={modal.newCourse} />
 
-        <div class="modal-footer">
-          {#if modal.editingCourseId}
-            <button class="btn-delete-modal" onclick={() => deleteCourse(modal.editingCourseId)}>删除课程</button>
-          {/if}
-          <button class="btn-cancel" onclick={closeModal}>取消</button>
-          <button class="btn-primary" onclick={saveCourse}>保存</button>
-        </div>
-      {:else}
-        <EventForm bind:event={modal.newEvent} />
+            <div class="modal-footer">
+              {#if modal.editingCourseId}
+                <button class="btn-delete-modal" onclick={() => deleteCourse(modal.editingCourseId)}>删除课程</button>
+              {/if}
+              <button class="btn-cancel" onclick={closeModal}>取消</button>
+              <button class="btn-primary" onclick={saveCourse}>保存</button>
+            </div>
+          {:else}
+            <EventForm bind:event={modal.newEvent} />
 
-        <div class="modal-footer">
-          {#if modal.editingEventId}
-            <button class="btn-delete-modal" onclick={() => deleteEvent(modal.editingEventId)}>删除日程</button>
+            <div class="modal-footer">
+              {#if modal.editingEventId}
+                <button class="btn-delete-modal" onclick={() => deleteEvent(modal.editingEventId)}>删除日程</button>
+              {/if}
+              <button class="btn-cancel" onclick={closeModal}>取消</button>
+              <button class="btn-primary" onclick={saveEvent}>保存</button>
+            </div>
           {/if}
-          <button class="btn-cancel" onclick={closeModal}>取消</button>
-          <button class="btn-primary" onclick={saveEvent}>保存</button>
         </div>
-      {/if}
+      {/key}
     </div>
   </div>
 {/if}
@@ -111,6 +150,15 @@
     padding: 4px;
     gap: 4px;
     margin-bottom: 16px;
+  }
+
+  /* 「表单 + 底部按钮」的动画载体：让两者作为整体切换。
+     min-height: 0 是关键——否则内容超高时这一层不会收缩，
+     内层 .modal-body 就拿不到可滚动的高度 */
+  .mode-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
 
   .tab-btn {

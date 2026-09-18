@@ -20,12 +20,13 @@
 
 <style>
   .top-actions {
-    position: fixed;
-    top: calc(env(safe-area-inset-top, 20px) + 28px);
-    right: 16px;
+    position: absolute;
+    /* 与 HomeHeader 的 margin-top 对齐（两者同为页面顶部第一行的内容） */
+    top: 12px;
+    right: 0;
     display: flex;
     gap: 2px;
-    z-index: 150;
+    z-index: 10;
   }
 
   .top-btn {

@@ -9,6 +9,12 @@
   gap: 14px;
   width: 100%;
   box-sizing: border-box;
+  /* 面板高度过渡时本区域会被临时压低，隐藏滚动条避免宽度抖动 */
+  scrollbar-width: none;
+}
+
+.modal-body::-webkit-scrollbar {
+  display: none;
 }
 
 .form-group {
